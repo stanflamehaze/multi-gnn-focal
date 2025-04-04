@@ -1,0 +1,204 @@
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\user\anaconda3\envs\env39\lib\logging\__init__.py", line 1086, in emit
+    stream.write(msg + self.terminator)
+  File "C:\Users\user\anaconda3\envs\env39\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 498-499: character maps to <undefined>
+Call stack:
+  File "C:\Users\user\Multi-GNN\main.py", line 41, in <module>
+    main()
+  File "C:\Users\user\Multi-GNN\main.py", line 34, in main
+    train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config)
+  File "C:\Users\user\Multi-GNN\training.py", line 228, in train_gnn
+    logging.info(summary(model, sample_x, sample_edge_index, sample_edge_attr))
+Message: '+------------------------------------------+-----------------------------------------+----------------+----------+\n| Layer                                    | Input Shape                             | Output Shape   | #Param   |\n|------------------------------------------+-----------------------------------------+----------------+----------|\n| GraphModule                              |                                         |                | 147,228  |\n| ├─(node_emb)ModuleDict                   | --                                      | --             | 198      |\n| │    └─(node)Linear                      | [150938, 2]                             | [150938, 66]   | 198      |\n| ├─(edge_emb)ModuleDict                   | --                                      | --             | 924      |\n| │    └─(node__to__node)Linear            | [699729, 6]                             | [699729, 66]   | 462      |\n| │    └─(node__rev_to__node)Linear        | [890471, 6]                             | [890471, 66]   | 462      |\n| ├─(convs)ModuleList                      | --                                      | --             | 53,064   |\n| │    └─(0)ModuleDict                     | --                                      | --             | 26,532   |\n| │    │    └─(node__to__node)GINEConv     | [150938, 66], [2, 699729], [699729, 66] | [150938, 66]   | 13,266   |\n| │    │    └─(node__rev_to__node)GINEConv | [150938, 66], [2, 890471], [890471, 66] | [150938, 66]   | 13,266   |\n| │    └─(1)ModuleDict                     | --                                      | --             | 26,532   |\n| │    │    └─(node__to__node)GINEConv     | [150938, 66], [2, 699729], [699729, 66] | [150938, 66]   | 13,266   |\n| │    │    └─(node__rev_to__node)GINEConv | [150938, 66], [2, 890471], [890471, 66] | [150938, 66]   | 13,266   |\n| ├─(batch_norms)ModuleList                | --                                      | --             | 264      |\n| │    └─(0)ModuleDict                     | --                                      | --             | 132      |\n| │    │    └─(node)BatchNorm              | [150938, 66]                            | [150938, 66]   | 132      |\n| │    └─(1)ModuleDict                     | --                                      | --             | 132      |\n| │    │    └─(node)BatchNorm              | [150938, 66]                            | [150938, 66]   | 132      |\n| ├─(emlps)ModuleList                      | --                                      | --             | 70,224   |\n| │    └─(0)ModuleList                     | --                                      | --             | 35,112   |\n| │    │    └─(0)ModuleDict                | --                                      | --             | 26,268   |\n| │    │    └─(1)ModuleDict                | --                                      | --             | --       |\n| │    │    └─(2)ModuleDict                | --                                      | --             | 8,844    |\n| │    └─(1)ModuleList                     | --                                      | --             | 35,112   |\n| │    │    └─(0)ModuleDict                | --                                      | --             | 26,268   |\n| │    │    └─(1)ModuleDict                | --                                      | --             | --       |\n| │    │    └─(2)ModuleDict                | --                                      | --             | 8,844    |\n| ├─(mlp)ModuleList                        | --                                      | --             | 22,554   |\n| │    └─(0)ModuleDict                     | --                                      | --             | 19,900   |\n| │    │    └─(node__to__node)Linear       | [699729, 198]                           | [699729, 50]   | 9,950    |\n| │    │    └─(node__rev_to__node)Linear   | [890471, 198]                           | [890471, 50]   | 9,950    |\n| │    └─(1)ModuleDict                     | --                                      | --             | --       |\n| │    │    └─(node__to__n
+Arguments: ()
+2025-03-29 00:58:03,796 [INFO ] +------------------------------------------+-----------------------------------------+----------------+----------+
+| Layer                                    | Input Shape                             | Output Shape   | #Param   |
+|------------------------------------------+-----------------------------------------+----------------+----------|
+| GraphModule                              |                                         |                | 147,228  |
+| ├─(node_emb)ModuleDict                   | --                                      | --             | 198      |
+| │    └─(node)Linear                      | [150938, 2]                             | [150938, 66]   | 198      |
+| ├─(edge_emb)ModuleDict                   | --                                      | --             | 924      |
+| │    └─(node__to__node)Linear            | [699729, 6]                             | [699729, 66]   | 462      |
+| │    └─(node__rev_to__node)Linear        | [890471, 6]                             | [890471, 66]   | 462      |
+| ├─(convs)ModuleList                      | --                                      | --             | 53,064   |
+| │    └─(0)ModuleDict                     | --                                      | --             | 26,532   |
+| │    │    └─(node__to__node)GINEConv     | [150938, 66], [2, 699729], [699729, 66] | [150938, 66]   | 13,266   |
+| │    │    └─(node__rev_to__node)GINEConv | [150938, 66], [2, 890471], [890471, 66] | [150938, 66]   | 13,266   |
+| │    └─(1)ModuleDict                     | --                                      | --             | 26,532   |
+| │    │    └─(node__to__node)GINEConv     | [150938, 66], [2, 699729], [699729, 66] | [150938, 66]   | 13,266   |
+| │    │    └─(node__rev_to__node)GINEConv | [150938, 66], [2, 890471], [890471, 66] | [150938, 66]   | 13,266   |
+| ├─(batch_norms)ModuleList                | --                                      | --             | 264      |
+| │    └─(0)ModuleDict                     | --                                      | --             | 132      |
+| │    │    └─(node)BatchNorm              | [150938, 66]                            | [150938, 66]   | 132      |
+| │    └─(1)ModuleDict                     | --                                      | --             | 132      |
+| │    │    └─(node)BatchNorm              | [150938, 66]                            | [150938, 66]   | 132      |
+| ├─(emlps)ModuleList                      | --                                      | --             | 70,224   |
+| │    └─(0)ModuleList                     | --                                      | --             | 35,112   |
+| │    │    └─(0)ModuleDict                | --                                      | --             | 26,268   |
+| │    │    └─(1)ModuleDict                | --                                      | --             | --       |
+| │    │    └─(2)ModuleDict                | --                                      | --             | 8,844    |
+| │    └─(1)ModuleList                     | --                                      | --             | 35,112   |
+| │    │    └─(0)ModuleDict                | --                                      | --             | 26,268   |
+| │    │    └─(1)ModuleDict                | --                                      | --             | --       |
+| │    │    └─(2)ModuleDict                | --                                      | --             | 8,844    |
+| ├─(mlp)ModuleList                        | --                                      | --             | 22,554   |
+| │    └─(0)ModuleDict                     | --                                      | --             | 19,900   |
+| │    │    └─(node__to__node)Linear       | [699729, 198]                           | [699729, 50]   | 9,950    |
+| │    │    └─(node__rev_to__node)Linear   | [890471, 198]                           | [890471, 50]   | 9,950    |
+| │    └─(1)ModuleDict                     | --                                      | --             | --       |
+| │    │    └─(node__to__node)ReLU         | [699729, 50]                            | [699729, 50]   | --       |
+| │    │    └─(node__rev_to__node)ReLU     | [890471, 50]                            | [890471, 50]   | --       |
+| │    └─(2)ModuleDict                     | --                                      | --             | --       |
+| │    │    └─(node__to__node)Dropout      | [699729, 50]                            | [699729, 50]   | --       |
+| │    │    └─(node__rev_to__node)Dropout  | [890471, 50]                            | [890471, 50]   | --       |
+| │    └─(3)ModuleDict                     | --                                      | --             | 2,550    |
+| │    │    └─(node__to__node)Linear       | [699729, 50]                            | [699729, 25]   | 1,275    |
+| │    │    └─(node__rev_to__node)Linear   | [890471, 50]                            | [890471, 25]   | 1,275    |
+| │    └─(4)ModuleDict                     | --                                      | --             | --       |
+| │    │    └─(node__to__node)ReLU         | [699729, 25]                            | [699729, 25]   | --       |
+| │    │    └─(node__rev_to__node)ReLU     | [890471, 25]                            | [890471, 25]   | --       |
+| │    └─(5)ModuleDict                     | --                                      | --             | --       |
+| │    │    └─(node__to__node)Dropout      | [699729, 25]                            | [699729, 25]   | --       |
+| │    │    └─(node__rev_to__node)Dropout  | [890471, 25]                            | [890471, 25]   | --       |
+| │    └─(6)ModuleDict                     | --                                      | --             | 104      |
+| │    │    └─(node__to__node)Linear       | [699729, 25]                            | [699729, 2]    | 52       |
+| │    │    └─(node__rev_to__node)Linear   | [890471, 25]                            | [890471, 2]    | 52       |
++------------------------------------------+-----------------------------------------+----------------+----------+
+2025-03-29 01:01:20,262 [INFO ] Train F1: 0.0019
+2025-03-29 01:04:00,607 [INFO ] Validation F1: 0.0000
+2025-03-29 01:04:00,608 [INFO ] Test F1: 0.0000
+2025-03-29 01:06:29,090 [INFO ] Train F1: 0.1795
+2025-03-29 01:09:13,312 [INFO ] Validation F1: 0.2872
+2025-03-29 01:09:13,312 [INFO ] Test F1: 0.3488
+2025-03-29 01:11:41,328 [INFO ] Train F1: 0.3059
+2025-03-29 01:14:19,751 [INFO ] Validation F1: 0.3693
+2025-03-29 01:14:19,752 [INFO ] Test F1: 0.4693
+2025-03-29 01:16:45,846 [INFO ] Train F1: 0.3552
+2025-03-29 01:19:31,825 [INFO ] Validation F1: 0.4578
+2025-03-29 01:19:31,825 [INFO ] Test F1: 0.5546
+2025-03-29 01:22:00,915 [INFO ] Train F1: 0.3779
+2025-03-29 01:24:42,949 [INFO ] Validation F1: 0.4534
+2025-03-29 01:24:42,949 [INFO ] Test F1: 0.5079
+2025-03-29 01:27:12,323 [INFO ] Train F1: 0.3860
+2025-03-29 01:29:58,818 [INFO ] Validation F1: 0.3915
+2025-03-29 01:29:58,819 [INFO ] Test F1: 0.5244
+2025-03-29 01:32:28,429 [INFO ] Train F1: 0.4132
+2025-03-29 01:35:15,146 [INFO ] Validation F1: 0.5012
+2025-03-29 01:35:15,146 [INFO ] Test F1: 0.5666
+2025-03-29 01:37:39,374 [INFO ] Train F1: 0.3473
+2025-03-29 01:40:19,869 [INFO ] Validation F1: 0.3425
+2025-03-29 01:40:19,870 [INFO ] Test F1: 0.5019
+2025-03-29 01:42:44,937 [INFO ] Train F1: 0.3349
+2025-03-29 01:45:25,038 [INFO ] Validation F1: 0.3409
+2025-03-29 01:45:25,039 [INFO ] Test F1: 0.5235
+2025-03-29 01:47:49,861 [INFO ] Train F1: 0.3953
+2025-03-29 01:50:30,038 [INFO ] Validation F1: 0.3542
+2025-03-29 01:50:30,038 [INFO ] Test F1: 0.5267
+2025-03-29 01:52:54,998 [INFO ] Train F1: 0.4250
+2025-03-29 01:55:35,339 [INFO ] Validation F1: 0.4731
+2025-03-29 01:55:35,339 [INFO ] Test F1: 0.5140
+2025-03-29 01:58:00,467 [INFO ] Train F1: 0.4282
+2025-03-29 02:00:41,012 [INFO ] Validation F1: 0.4227
+2025-03-29 02:00:41,012 [INFO ] Test F1: 0.4556
+2025-03-29 02:03:05,585 [INFO ] Train F1: 0.4316
+2025-03-29 02:05:45,562 [INFO ] Validation F1: 0.3595
+2025-03-29 02:05:45,562 [INFO ] Test F1: 0.4986
+2025-03-29 02:09:05,156 [INFO ] Train F1: 0.4424
+2025-03-29 02:13:29,162 [INFO ] Validation F1: 0.3513
+2025-03-29 02:13:29,162 [INFO ] Test F1: 0.3013
+2025-03-29 02:17:27,101 [INFO ] Train F1: 0.4389
+2025-03-29 02:22:49,712 [INFO ] Validation F1: 0.4052
+2025-03-29 02:22:49,712 [INFO ] Test F1: 0.4110
+2025-03-29 02:26:50,995 [INFO ] Train F1: 0.4417
+2025-03-29 02:30:52,406 [INFO ] Validation F1: 0.5265
+2025-03-29 02:30:52,407 [INFO ] Test F1: 0.5451
+2025-03-29 02:36:01,863 [INFO ] Train F1: 0.4564
+2025-03-29 02:41:13,976 [INFO ] Validation F1: 0.5297
+2025-03-29 02:41:13,976 [INFO ] Test F1: 0.5246
+2025-03-29 02:44:57,989 [INFO ] Train F1: 0.4676
+2025-03-29 02:48:38,522 [INFO ] Validation F1: 0.5573
+2025-03-29 02:48:38,522 [INFO ] Test F1: 0.5955
+2025-03-29 02:52:20,439 [INFO ] Train F1: 0.4630
+2025-03-29 02:56:17,019 [INFO ] Validation F1: 0.5385
+2025-03-29 02:56:17,019 [INFO ] Test F1: 0.4677
+2025-03-29 02:59:19,812 [INFO ] Train F1: 0.4734
+2025-03-29 03:02:07,905 [INFO ] Validation F1: 0.4366
+2025-03-29 03:02:07,905 [INFO ] Test F1: 0.3823
+2025-03-29 03:04:36,292 [INFO ] Train F1: 0.4479
+2025-03-29 03:07:24,281 [INFO ] Validation F1: 0.4839
+2025-03-29 03:07:24,282 [INFO ] Test F1: 0.4118
+2025-03-29 03:09:51,187 [INFO ] Train F1: 0.4593
+2025-03-29 03:12:32,678 [INFO ] Validation F1: 0.5479
+2025-03-29 03:12:32,678 [INFO ] Test F1: 0.5875
+2025-03-29 03:14:57,054 [INFO ] Train F1: 0.4668
+2025-03-29 03:17:38,992 [INFO ] Validation F1: 0.4961
+2025-03-29 03:17:38,992 [INFO ] Test F1: 0.4915
+2025-03-29 03:20:03,390 [INFO ] Train F1: 0.2564
+2025-03-29 03:22:39,850 [INFO ] Validation F1: 0.0000
+2025-03-29 03:22:39,850 [INFO ] Test F1: 0.0000
+2025-03-29 03:25:04,543 [INFO ] Train F1: 0.0000
+2025-03-29 03:27:46,659 [INFO ] Validation F1: 0.0000
+2025-03-29 03:27:46,659 [INFO ] Test F1: 0.0000
+2025-03-29 03:30:10,901 [INFO ] Train F1: 0.0000
+2025-03-29 03:32:52,752 [INFO ] Validation F1: 0.0000
+2025-03-29 03:32:52,752 [INFO ] Test F1: 0.0000
+2025-03-29 03:35:16,866 [INFO ] Train F1: 0.0016
+2025-03-29 03:37:57,857 [INFO ] Validation F1: 0.0019
+2025-03-29 03:37:57,858 [INFO ] Test F1: 0.0012
+2025-03-29 03:40:22,518 [INFO ] Train F1: 0.2742
+2025-03-29 03:42:59,053 [INFO ] Validation F1: 0.3315
+2025-03-29 03:42:59,053 [INFO ] Test F1: 0.3779
+2025-03-29 03:45:23,293 [INFO ] Train F1: 0.3802
+2025-03-29 03:48:05,099 [INFO ] Validation F1: 0.3863
+2025-03-29 03:48:05,099 [INFO ] Test F1: 0.3770
+2025-03-29 03:50:29,708 [INFO ] Train F1: 0.3704
+2025-03-29 03:53:11,604 [INFO ] Validation F1: 0.4323
+2025-03-29 03:53:11,605 [INFO ] Test F1: 0.3630
+2025-03-29 03:55:36,241 [INFO ] Train F1: 0.3965
+2025-03-29 03:58:17,903 [INFO ] Validation F1: 0.4143
+2025-03-29 03:58:17,904 [INFO ] Test F1: 0.2896
+2025-03-29 04:00:42,034 [INFO ] Train F1: 0.4188
+2025-03-29 04:03:24,313 [INFO ] Validation F1: 0.5093
+2025-03-29 04:03:24,314 [INFO ] Test F1: 0.5827
+2025-03-29 04:05:49,054 [INFO ] Train F1: 0.4395
+2025-03-29 04:08:25,327 [INFO ] Validation F1: 0.4407
+2025-03-29 04:08:25,328 [INFO ] Test F1: 0.4917
+2025-03-29 04:10:49,632 [INFO ] Train F1: 0.4189
+2025-03-29 04:13:31,198 [INFO ] Validation F1: 0.4733
+2025-03-29 04:13:31,199 [INFO ] Test F1: 0.5429
+2025-03-29 04:15:55,484 [INFO ] Train F1: 0.1342
+2025-03-29 04:18:37,421 [INFO ] Validation F1: 0.4615
+2025-03-29 04:18:37,422 [INFO ] Test F1: 0.5424
+2025-03-29 04:21:02,298 [INFO ] Train F1: 0.4042
+2025-03-29 04:23:44,001 [INFO ] Validation F1: 0.4363
+2025-03-29 04:23:44,002 [INFO ] Test F1: 0.4498
+2025-03-29 04:26:08,386 [INFO ] Train F1: 0.3525
+2025-03-29 04:28:49,730 [INFO ] Validation F1: 0.3671
+2025-03-29 04:28:49,731 [INFO ] Test F1: 0.4021
+2025-03-29 04:31:14,113 [INFO ] Train F1: 0.3750
+2025-03-29 04:33:50,531 [INFO ] Validation F1: 0.4293
+2025-03-29 04:33:50,531 [INFO ] Test F1: 0.4948
+2025-03-29 04:36:14,917 [INFO ] Train F1: 0.3526
+2025-03-29 04:38:56,519 [INFO ] Validation F1: 0.4208
+2025-03-29 04:38:56,519 [INFO ] Test F1: 0.4678
+2025-03-29 04:41:20,900 [INFO ] Train F1: 0.3958
+2025-03-29 04:43:57,522 [INFO ] Validation F1: 0.3655
+2025-03-29 04:43:57,523 [INFO ] Test F1: 0.3911
+2025-03-29 04:46:22,257 [INFO ] Train F1: 0.3825
+2025-03-29 04:49:03,829 [INFO ] Validation F1: 0.3585
+2025-03-29 04:49:03,829 [INFO ] Test F1: 0.2937
+2025-03-29 04:51:28,156 [INFO ] Train F1: 0.4111
+2025-03-29 04:54:10,191 [INFO ] Validation F1: 0.4003
+2025-03-29 04:54:10,191 [INFO ] Test F1: 0.3282
+2025-03-29 04:56:34,833 [INFO ] Train F1: 0.4292
+2025-03-29 04:59:16,902 [INFO ] Validation F1: 0.4043
+2025-03-29 04:59:16,903 [INFO ] Test F1: 0.4201
+2025-03-29 05:01:41,259 [INFO ] Train F1: 0.4325
+2025-03-29 05:04:23,032 [INFO ] Validation F1: 0.3977
+2025-03-29 05:04:23,032 [INFO ] Test F1: 0.3589
+2025-03-29 05:06:47,639 [INFO ] Train F1: 0.4279
+2025-03-29 05:09:29,401 [INFO ] Validation F1: 0.4747
+2025-03-29 05:09:29,401 [INFO ] Test F1: 0.5877

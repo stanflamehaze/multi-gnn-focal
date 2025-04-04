@@ -1,0 +1,22 @@
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_setup.py:_flush():67] Current SDK version is 0.19.8
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_setup.py:_flush():67] Configure stats pid to 30920
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_setup.py:_flush():67] Loading settings from C:\Users\user\.config\wandb\settings
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_setup.py:_flush():67] Loading settings from C:\Users\user\Multi-GNN\wandb\settings
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_setup.py:_flush():67] Loading settings from environment variables
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_init.py:setup_run_log_directory():647] Logging user logs to C:\Users\user\Multi-GNN\wandb\run-20250330_192524-he5bkflo\logs\debug.log
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_init.py:setup_run_log_directory():648] Logging internal logs to C:\Users\user\Multi-GNN\wandb\run-20250330_192524-he5bkflo\logs\debug-internal.log
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_init.py:init():761] calling init triggers
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_init.py:init():766] wandb.init called with sweep_config: {}
+config: {'epochs': 100, 'batch_size': 8192, 'model': 'pna', 'data': '.', 'num_neighbors': [100, 100], 'lr': 0.0006116418195373612, 'n_hidden': 20, 'n_gnn_layers': 2, 'loss': 'ce', 'w_ce1': 1.0003967674742307, 'w_ce2': 7.077633468006714, 'dropout': 0.08340440094051481, 'final_dropout': 0.28812979737686323, 'n_heads': None, '_wandb': {}}
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_init.py:init():784] starting backend
+2025-03-30 19:25:24,393 INFO    MainThread:30920 [wandb_init.py:init():788] sending inform_init request
+2025-03-30 19:25:24,415 INFO    MainThread:30920 [backend.py:_multiprocessing_setup():101] multiprocessing start_methods=spawn, using: spawn
+2025-03-30 19:25:24,415 INFO    MainThread:30920 [wandb_init.py:init():798] backend started and connected
+2025-03-30 19:25:24,416 INFO    MainThread:30920 [wandb_init.py:init():891] updated telemetry
+2025-03-30 19:25:24,568 INFO    MainThread:30920 [wandb_init.py:init():915] communicating run to backend with 90.0 second timeout
+2025-03-30 19:25:25,084 INFO    MainThread:30920 [wandb_init.py:init():990] starting run threads in backend
+2025-03-30 19:25:25,240 INFO    MainThread:30920 [wandb_run.py:_console_start():2375] atexit reg
+2025-03-30 19:25:25,240 INFO    MainThread:30920 [wandb_run.py:_redirect():2227] redirect: wrap_raw
+2025-03-30 19:25:25,240 INFO    MainThread:30920 [wandb_run.py:_redirect():2292] Wrapping output streams.
+2025-03-30 19:25:25,240 INFO    MainThread:30920 [wandb_run.py:_redirect():2315] Redirects installed.
+2025-03-30 19:25:25,242 INFO    MainThread:30920 [wandb_init.py:init():1032] run started, returning control to user process

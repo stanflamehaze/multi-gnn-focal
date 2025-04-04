@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "C:\Users\user\Multi-GNN\main.py", line 41, in <module>
+    main()
+  File "C:\Users\user\Multi-GNN\main.py", line 34, in main
+    train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config)
+  File "C:\Users\user\Multi-GNN\training.py", line 228, in train_gnn
+    logging.info(summary(model, sample_x, sample_edge_index, sample_edge_attr))
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch_geometric\nn\summary.py", line 125, in summary
+    return make_table(info_list, max_depth=max_depth)
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch_geometric\nn\summary.py", line 161, in make_table
+    from tabulate import tabulate
+ModuleNotFoundError: No module named 'tabulate'

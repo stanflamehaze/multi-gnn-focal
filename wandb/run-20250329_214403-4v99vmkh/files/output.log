@@ -1,0 +1,41 @@
+C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\cuda\__init__.py:235: UserWarning:
+NVIDIA GeForce RTX 5090 with CUDA capability sm_120 is not compatible with the current PyTorch installation.
+The current PyTorch install supports CUDA capabilities sm_50 sm_60 sm_61 sm_70 sm_75 sm_80 sm_86 sm_90.
+If you want to use the NVIDIA GeForce RTX 5090 GPU with PyTorch, please check the instructions at https://pytorch.org/get-started/locally/
+
+  warnings.warn(
+Traceback (most recent call last):
+  File "C:\Users\user\Multi-GNN\main.py", line 41, in <module>
+    main()
+  File "C:\Users\user\Multi-GNN\main.py", line 34, in main
+    train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config)
+  File "C:\Users\user\Multi-GNN\training.py", line 228, in train_gnn
+    logging.info(summary(model, sample_x, sample_edge_index, sample_edge_attr))
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch_geometric\nn\summary.py", line 117, in summary
+    model(*args, **kwargs)
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\fx\graph_module.py", line 784, in call_wrapped
+    return self._wrapped_call(self, *args, **kwargs)
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\fx\graph_module.py", line 361, in __call__
+    raise e
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\fx\graph_module.py", line 348, in __call__
+    return super(self.cls, obj).__call__(*args, **kwargs)  # type: ignore[misc]
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\nn\modules\module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\nn\modules\module.py", line 1844, in _call_impl
+    return inner()
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\nn\modules\module.py", line 1790, in inner
+    result = forward_call(*args, **kwargs)
+  File "<eval_with_key>.1", line 24, in forward
+    convs_0__node1 = getattr(self.convs, "0").node__to__node(node_emb__node, edge_index__node__to__node, long__node__to__node)
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\nn\modules\module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\nn\modules\module.py", line 1844, in _call_impl
+    return inner()
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\nn\modules\module.py", line 1790, in inner
+    result = forward_call(*args, **kwargs)
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch_geometric\nn\conv\rgcn_conv.py", line 234, in forward
+    max_segment_size=int(segment_count.max()),
+RuntimeError: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.

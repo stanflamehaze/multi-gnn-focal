@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "C:\Users\user\Multi-GNN\main.py", line 41, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\user\Multi-GNN\main.py", line 34, in main
+    train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\user\Multi-GNN\training.py", line 207, in train_gnn
+    sample_batch = next(iter(tr_loader))
+  File "C:\Users\user\AppData\Roaming\Python\Python313\site-packages\torch\utils\data\dataloader.py", line 733, in __next__
+    data = self._next_data()
+  File "C:\Users\user\AppData\Roaming\Python\Python313\site-packages\torch\utils\data\dataloader.py", line 789, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "C:\Users\user\AppData\Roaming\Python\Python313\site-packages\torch\utils\data\_utils\fetch.py", line 55, in fetch
+    return self.collate_fn(data)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\user\AppData\Roaming\Python\Python313\site-packages\torch_geometric\loader\link_loader.py", line 211, in collate_fn
+    out = self.link_sampler.sample_from_edges(
+        input_data, neg_sampling=self.neg_sampling)
+  File "C:\Users\user\AppData\Roaming\Python\Python313\site-packages\torch_geometric\sampler\neighbor_sampler.py", line 334, in sample_from_edges
+    out = edge_sample(inputs, self._sample, self.num_nodes, self.disjoint,
+                      self.node_time, neg_sampling)
+  File "C:\Users\user\AppData\Roaming\Python\Python313\site-packages\torch_geometric\sampler\neighbor_sampler.py", line 666, in edge_sample
+    out = sample_fn(seed_dict, seed_time_dict)
+  File "C:\Users\user\AppData\Roaming\Python\Python313\site-packages\torch_geometric\sampler\neighbor_sampler.py", line 431, in _sample
+    raise ImportError(f"'{self.__class__.__name__}' requires "
+                      f"either 'pyg-lib' or 'torch-sparse'")
+ImportError: 'NeighborSampler' requires either 'pyg-lib' or 'torch-sparse'

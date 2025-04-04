@@ -1,0 +1,161 @@
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\user\anaconda3\envs\env39\lib\logging\__init__.py", line 1086, in emit
+    stream.write(msg + self.terminator)
+  File "C:\Users\user\anaconda3\envs\env39\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 458-459: character maps to <undefined>
+Call stack:
+  File "C:\Users\user\Multi-GNN\main.py", line 41, in <module>
+    main()
+  File "C:\Users\user\Multi-GNN\main.py", line 34, in main
+    train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config)
+  File "C:\Users\user\Multi-GNN\training.py", line 228, in train_gnn
+    logging.info(summary(model, sample_x, sample_edge_index, sample_edge_attr))
+Message: '+---------------------------------+----------------------------------------+----------------+----------+\n| Layer                           | Input Shape                            | Output Shape   | #Param   |\n|---------------------------------+----------------------------------------+----------------+----------|\n| PNA                             | [50614, 1], [2, 341148], [341148, 4]   | [341148, 2]    | 28,917   |\n| ├─(node_emb)Linear              | [50614, 1]                             | [50614, 20]    | 40       |\n| ├─(edge_emb)Linear              | [341148, 4]                            | [341148, 20]   | 100      |\n| ├─(convs)ModuleList             | --                                     | --             | 24,320   |\n| │    └─(0)PNAConv               | [50614, 20], [2, 341148], [341148, 20] | [50614, 20]    | 12,160   |\n| │    └─(1)PNAConv               | [50614, 20], [2, 341148], [341148, 20] | [50614, 20]    | 12,160   |\n| ├─(emlps)ModuleList             | --                                     | --             | --       |\n| ├─(batch_norms)ModuleList       | --                                     | --             | 80       |\n| │    └─(0)BatchNorm             | [50614, 20]                            | [50614, 20]    | 40       |\n| │    │    └─(module)BatchNorm1d | [50614, 20]                            | [50614, 20]    | 40       |\n| │    └─(1)BatchNorm             | [50614, 20]                            | [50614, 20]    | 40       |\n| │    │    └─(module)BatchNorm1d | [50614, 20]                            | [50614, 20]    | 40       |\n| ├─(mlp)Sequential               | [341148, 60]                           | [341148, 2]    | 4,377    |\n| │    └─(0)Linear                | [341148, 60]                           | [341148, 50]   | 3,050    |\n| │    └─(1)ReLU                  | [341148, 50]                           | [341148, 50]   | --       |\n| │    └─(2)Dropout               | [341148, 50]                           | [341148, 50]   | --       |\n| │    └─(3)Linear                | [341148, 50]                           | [341148, 25]   | 1,275    |\n| │    └─(4)ReLU                  | [341148, 25]                           | [341148, 25]   | --       |\n| │    └─(5)Dropout               | [341148, 25]                           | [341148, 25]   | --       |\n| │    └─(6)Linear                | [341148, 25]                           | [341148, 2]    | 52       |\n+---------------------------------+----------------------------------------+----------------+----------+'
+Arguments: ()
+2025-04-03 06:52:58,109 [INFO ] +---------------------------------+----------------------------------------+----------------+----------+
+| Layer                           | Input Shape                            | Output Shape   | #Param   |
+|---------------------------------+----------------------------------------+----------------+----------|
+| PNA                             | [50614, 1], [2, 341148], [341148, 4]   | [341148, 2]    | 28,917   |
+| ├─(node_emb)Linear              | [50614, 1]                             | [50614, 20]    | 40       |
+| ├─(edge_emb)Linear              | [341148, 4]                            | [341148, 20]   | 100      |
+| ├─(convs)ModuleList             | --                                     | --             | 24,320   |
+| │    └─(0)PNAConv               | [50614, 20], [2, 341148], [341148, 20] | [50614, 20]    | 12,160   |
+| │    └─(1)PNAConv               | [50614, 20], [2, 341148], [341148, 20] | [50614, 20]    | 12,160   |
+| ├─(emlps)ModuleList             | --                                     | --             | --       |
+| ├─(batch_norms)ModuleList       | --                                     | --             | 80       |
+| │    └─(0)BatchNorm             | [50614, 20]                            | [50614, 20]    | 40       |
+| │    │    └─(module)BatchNorm1d | [50614, 20]                            | [50614, 20]    | 40       |
+| │    └─(1)BatchNorm             | [50614, 20]                            | [50614, 20]    | 40       |
+| │    │    └─(module)BatchNorm1d | [50614, 20]                            | [50614, 20]    | 40       |
+| ├─(mlp)Sequential               | [341148, 60]                           | [341148, 2]    | 4,377    |
+| │    └─(0)Linear                | [341148, 60]                           | [341148, 50]   | 3,050    |
+| │    └─(1)ReLU                  | [341148, 50]                           | [341148, 50]   | --       |
+| │    └─(2)Dropout               | [341148, 50]                           | [341148, 50]   | --       |
+| │    └─(3)Linear                | [341148, 50]                           | [341148, 25]   | 1,275    |
+| │    └─(4)ReLU                  | [341148, 25]                           | [341148, 25]   | --       |
+| │    └─(5)Dropout               | [341148, 25]                           | [341148, 25]   | --       |
+| │    └─(6)Linear                | [341148, 25]                           | [341148, 2]    | 52       |
++---------------------------------+----------------------------------------+----------------+----------+
+2025-04-03 06:54:16,780 [INFO ] Train F1: 0.0014
+2025-04-03 06:55:03,213 [INFO ] Validation F1: 0.0000
+2025-04-03 06:55:03,213 [INFO ] Test F1: 0.0000
+2025-04-03 06:56:20,590 [INFO ] Train F1: 0.0008
+2025-04-03 06:57:07,607 [INFO ] Validation F1: 0.0057
+2025-04-03 06:57:07,607 [INFO ] Test F1: 0.0273
+2025-04-03 06:58:24,538 [INFO ] Train F1: 0.0657
+2025-04-03 06:59:11,527 [INFO ] Validation F1: 0.2248
+2025-04-03 06:59:11,527 [INFO ] Test F1: 0.3023
+2025-04-03 07:00:28,884 [INFO ] Train F1: 0.1857
+2025-04-03 07:01:14,986 [INFO ] Validation F1: 0.2985
+2025-04-03 07:01:14,986 [INFO ] Test F1: 0.3423
+2025-04-03 07:02:31,747 [INFO ] Train F1: 0.2528
+2025-04-03 07:03:19,051 [INFO ] Validation F1: 0.3411
+2025-04-03 07:03:19,051 [INFO ] Test F1: 0.4069
+2025-04-03 07:04:34,807 [INFO ] Train F1: 0.2934
+2025-04-03 07:05:23,434 [INFO ] Validation F1: 0.3719
+2025-04-03 07:05:23,434 [INFO ] Test F1: 0.4181
+2025-04-03 07:06:37,965 [INFO ] Train F1: 0.3320
+2025-04-03 07:07:26,698 [INFO ] Validation F1: 0.3948
+2025-04-03 07:07:26,699 [INFO ] Test F1: 0.4517
+2025-04-03 07:08:41,363 [INFO ] Train F1: 0.3527
+2025-04-03 07:09:30,083 [INFO ] Validation F1: 0.4162
+2025-04-03 07:09:30,083 [INFO ] Test F1: 0.4879
+2025-04-03 07:10:44,676 [INFO ] Train F1: 0.3763
+2025-04-03 07:11:33,348 [INFO ] Validation F1: 0.4059
+2025-04-03 07:11:33,348 [INFO ] Test F1: 0.4769
+2025-04-03 07:12:47,860 [INFO ] Train F1: 0.3957
+2025-04-03 07:13:36,395 [INFO ] Validation F1: 0.4023
+2025-04-03 07:13:36,395 [INFO ] Test F1: 0.4920
+2025-04-03 07:14:50,853 [INFO ] Train F1: 0.4097
+2025-04-03 07:15:39,456 [INFO ] Validation F1: 0.4518
+2025-04-03 07:15:39,457 [INFO ] Test F1: 0.4783
+2025-04-03 07:16:54,126 [INFO ] Train F1: 0.4215
+2025-04-03 07:17:42,834 [INFO ] Validation F1: 0.4691
+2025-04-03 07:17:42,835 [INFO ] Test F1: 0.5514
+2025-04-03 07:18:57,469 [INFO ] Train F1: 0.4164
+2025-04-03 07:19:45,994 [INFO ] Validation F1: 0.4664
+2025-04-03 07:19:45,994 [INFO ] Test F1: 0.5318
+2025-04-03 07:21:00,568 [INFO ] Train F1: 0.4299
+2025-04-03 07:21:49,133 [INFO ] Validation F1: 0.4667
+2025-04-03 07:21:49,133 [INFO ] Test F1: 0.5432
+2025-04-03 07:23:03,626 [INFO ] Train F1: 0.4415
+2025-04-03 07:23:52,302 [INFO ] Validation F1: 0.4965
+2025-04-03 07:23:52,302 [INFO ] Test F1: 0.5621
+2025-04-03 07:25:06,974 [INFO ] Train F1: 0.4434
+2025-04-03 07:25:55,680 [INFO ] Validation F1: 0.4384
+2025-04-03 07:25:55,681 [INFO ] Test F1: 0.5141
+2025-04-03 07:27:10,295 [INFO ] Train F1: 0.4466
+2025-04-03 07:27:58,968 [INFO ] Validation F1: 0.5117
+2025-04-03 07:27:58,968 [INFO ] Test F1: 0.5572
+2025-04-03 07:29:13,460 [INFO ] Train F1: 0.4595
+2025-04-03 07:30:02,225 [INFO ] Validation F1: 0.4810
+2025-04-03 07:30:02,225 [INFO ] Test F1: 0.5396
+2025-04-03 07:31:16,764 [INFO ] Train F1: 0.4516
+2025-04-03 07:32:05,407 [INFO ] Validation F1: 0.5066
+2025-04-03 07:32:05,408 [INFO ] Test F1: 0.5667
+2025-04-03 07:33:20,072 [INFO ] Train F1: 0.4605
+2025-04-03 07:34:08,707 [INFO ] Validation F1: 0.4812
+2025-04-03 07:34:08,708 [INFO ] Test F1: 0.5753
+2025-04-03 07:35:23,333 [INFO ] Train F1: 0.4681
+2025-04-03 07:36:11,967 [INFO ] Validation F1: 0.5205
+2025-04-03 07:36:11,967 [INFO ] Test F1: 0.5688
+2025-04-03 07:37:26,488 [INFO ] Train F1: 0.4704
+2025-04-03 07:38:14,987 [INFO ] Validation F1: 0.5069
+2025-04-03 07:38:14,987 [INFO ] Test F1: 0.5746
+2025-04-03 07:39:29,611 [INFO ] Train F1: 0.4649
+2025-04-03 07:40:18,207 [INFO ] Validation F1: 0.4895
+2025-04-03 07:40:18,207 [INFO ] Test F1: 0.5529
+2025-04-03 07:41:32,867 [INFO ] Train F1: 0.4714
+2025-04-03 07:42:21,660 [INFO ] Validation F1: 0.5219
+2025-04-03 07:42:21,661 [INFO ] Test F1: 0.5936
+2025-04-03 07:43:36,264 [INFO ] Train F1: 0.4797
+2025-04-03 07:44:24,833 [INFO ] Validation F1: 0.4921
+2025-04-03 07:44:24,833 [INFO ] Test F1: 0.5399
+2025-04-03 07:45:39,385 [INFO ] Train F1: 0.4812
+2025-04-03 07:46:27,892 [INFO ] Validation F1: 0.5312
+2025-04-03 07:46:27,892 [INFO ] Test F1: 0.5797
+2025-04-03 07:47:42,423 [INFO ] Train F1: 0.4806
+2025-04-03 07:48:31,104 [INFO ] Validation F1: 0.5220
+2025-04-03 07:48:31,104 [INFO ] Test F1: 0.5677
+2025-04-03 07:49:45,715 [INFO ] Train F1: 0.4781
+2025-04-03 07:50:34,285 [INFO ] Validation F1: 0.5281
+2025-04-03 07:50:34,286 [INFO ] Test F1: 0.5646
+2025-04-03 07:51:48,893 [INFO ] Train F1: 0.4899
+2025-04-03 07:52:37,426 [INFO ] Validation F1: 0.5022
+2025-04-03 07:52:37,426 [INFO ] Test F1: 0.5409
+2025-04-03 07:53:51,986 [INFO ] Train F1: 0.4913
+2025-04-03 07:54:40,397 [INFO ] Validation F1: 0.5301
+2025-04-03 07:54:40,398 [INFO ] Test F1: 0.5525
+2025-04-03 07:55:54,933 [INFO ] Train F1: 0.4907
+2025-04-03 07:56:43,714 [INFO ] Validation F1: 0.5219
+2025-04-03 07:56:43,715 [INFO ] Test F1: 0.5714
+2025-04-03 07:57:58,370 [INFO ] Train F1: 0.4990
+2025-04-03 07:58:46,918 [INFO ] Validation F1: 0.4983
+2025-04-03 07:58:46,919 [INFO ] Test F1: 0.5304
+2025-04-03 08:00:01,463 [INFO ] Train F1: 0.4959
+Traceback (most recent call last):
+  File "C:\Users\user\Multi-GNN\main.py", line 41, in <module>
+    main()
+  File "C:\Users\user\Multi-GNN\main.py", line 34, in main
+    train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config)
+  File "C:\Users\user\Multi-GNN\training.py", line 235, in train_gnn
+    model = train_homo(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config)
+  File "C:\Users\user\Multi-GNN\training.py", line 51, in train_homo
+    val_f1 = evaluate_homo(val_loader, val_inds, model, val_data, device, args)
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\utils\_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "C:\Users\user\Multi-GNN\train_util.py", line 103, in evaluate_homo
+    for batch in tqdm.tqdm(loader, disable=not args.tqdm):
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\tqdm\std.py", line 1169, in __iter__
+    for obj in iterable:
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\utils\data\dataloader.py", line 701, in __next__
+    data = self._next_data()
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\utils\data\dataloader.py", line 757, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\utils\data\_utils\fetch.py", line 52, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\utils\data\_utils\fetch.py", line 52, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+SystemError: \Objects\listobject.c:324: bad argument to internal function

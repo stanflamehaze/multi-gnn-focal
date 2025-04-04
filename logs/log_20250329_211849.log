@@ -1,0 +1,8 @@
+2025-03-29 21:18:49,756 [INFO ] Run Configuration: {'seed': 42, 'use_cuda': True, 'epochs': 5, 'batch_size': 8192, 'model_type': 'gin', 'num_neighbors': [100, 100], 'add_ports': False, 'add_tds': False, 'add_ego': False, 'use_reverse_mp': False, 'lr': 0.006, 'n_hidden': 64, 'n_gnn_layers': 2, 'dropout': 0.01, 'final_dropout': 0.1, 'w_ce1': 1.0, 'w_ce2': 6.0, 'save_best_model': True, 'run_unique_name': '20250329_211849', 'use_tqdm': True}
+2025-03-29 21:18:49,758 [INFO ] Random seed set as 42
+2025-03-29 21:18:49,759 [INFO ] Using device: cuda
+2025-03-29 21:18:49,759 [INFO ] --- Starting Data Loading & Processing ---
+2025-03-29 21:18:52,102 [INFO ] Loaded 5078345 txns from D:\aml\aml-demo-data\formatted_transactions.csv
+2025-03-29 21:18:52,152 [INFO ] Created 515088 nodes (placeholder features).
+2025-03-29 21:18:52,210 [INFO ] Using edge features: ['Amount Received']
+2025-03-29 21:18:52,212 [INFO ] Data spans 18 days, 5078345 transactions

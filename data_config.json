@@ -1,0 +1,7 @@
+{
+    "paths": {
+      "aml_data": "D:/aml/aml-demo-data", 
+      "model_to_load": "D:/aml/aml-demo-data/Small_HI/load",
+      "model_to_save": "D:/aml/aml-demo-data/Small_HI/save"
+    }
+  }

@@ -1,0 +1,16 @@
+{"time":"2025-04-03T13:29:47.0436913+01:00","level":"INFO","msg":"stream: starting","core version":"0.19.8","symlink path":"C:\\Users\\user\\Multi-GNN\\wandb\\run-20250403_132947-2dne2gsx\\logs\\debug-core.log"}
+{"time":"2025-04-03T13:29:47.2826173+01:00","level":"INFO","msg":"created new stream","id":"2dne2gsx"}
+{"time":"2025-04-03T13:29:47.2826173+01:00","level":"INFO","msg":"handler: started","stream_id":"2dne2gsx"}
+{"time":"2025-04-03T13:29:47.2841886+01:00","level":"INFO","msg":"stream: started","id":"2dne2gsx"}
+{"time":"2025-04-03T13:29:47.283185+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"2dne2gsx"}
+{"time":"2025-04-03T13:29:47.2841886+01:00","level":"INFO","msg":"sender: started","stream_id":"2dne2gsx"}
+{"time":"2025-04-03T13:29:47.596868+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-04-03T16:08:40.6511477+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-04-03T16:08:40.6511477+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-04-03T16:08:41.4045792+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-04-03T16:08:41.6201357+01:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2025-04-03T16:08:41.6222251+01:00","level":"INFO","msg":"stream: closing","id":"2dne2gsx"}
+{"time":"2025-04-03T16:08:41.6222251+01:00","level":"INFO","msg":"handler: closed","stream_id":"2dne2gsx"}
+{"time":"2025-04-03T16:08:41.6222251+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":"2dne2gsx"}
+{"time":"2025-04-03T16:08:41.6259677+01:00","level":"INFO","msg":"sender: closed","stream_id":"2dne2gsx"}
+{"time":"2025-04-03T16:08:41.6259677+01:00","level":"INFO","msg":"stream: closed","id":"2dne2gsx"}

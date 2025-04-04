@@ -1,0 +1,44 @@
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\user\anaconda3\envs\env39\lib\logging\__init__.py", line 1086, in emit
+    stream.write(msg + self.terminator)
+  File "C:\Users\user\anaconda3\envs\env39\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 458-459: character maps to <undefined>
+Call stack:
+  File "C:\Users\user\Multi-GNN\main.py", line 41, in <module>
+    main()
+  File "C:\Users\user\Multi-GNN\main.py", line 34, in main
+    train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config)
+  File "C:\Users\user\Multi-GNN\training.py", line 228, in train_gnn
+    logging.info(summary(model, sample_x, sample_edge_index, sample_edge_attr))
+Message: '+---------------------------------+----------------------------------------+----------------+----------+\n| Layer                           | Input Shape                            | Output Shape   | #Param   |\n|---------------------------------+----------------------------------------+----------------+----------|\n| GINe                            | [50614, 1], [2, 341148], [341148, 4]   | [341148, 2]    | 38,535   |\n| ├─(node_emb)Linear              | [50614, 1]                             | [50614, 66]    | 132      |\n| ├─(edge_emb)Linear              | [341148, 4]                            | [341148, 66]   | 330      |\n| ├─(convs)ModuleList             | --                                     | --             | 26,532   |\n| │    └─(0)GINEConv              | [50614, 66], [2, 341148], [341148, 66] | [50614, 66]    | 13,266   |\n| │    └─(1)GINEConv              | [50614, 66], [2, 341148], [341148, 66] | [50614, 66]    | 13,266   |\n| ├─(emlps)ModuleList             | --                                     | --             | --       |\n| ├─(batch_norms)ModuleList       | --                                     | --             | 264      |\n| │    └─(0)BatchNorm             | [50614, 66]                            | [50614, 66]    | 132      |\n| │    │    └─(module)BatchNorm1d | [50614, 66]                            | [50614, 66]    | 132      |\n| │    └─(1)BatchNorm             | [50614, 66]                            | [50614, 66]    | 132      |\n| │    │    └─(module)BatchNorm1d | [50614, 66]                            | [50614, 66]    | 132      |\n| ├─(mlp)Sequential               | [341148, 198]                          | [341148, 2]    | 11,277   |\n| │    └─(0)Linear                | [341148, 198]                          | [341148, 50]   | 9,950    |\n| │    └─(1)ReLU                  | [341148, 50]                           | [341148, 50]   | --       |\n| │    └─(2)Dropout               | [341148, 50]                           | [341148, 50]   | --       |\n| │    └─(3)Linear                | [341148, 50]                           | [341148, 25]   | 1,275    |\n| │    └─(4)ReLU                  | [341148, 25]                           | [341148, 25]   | --       |\n| │    └─(5)Dropout               | [341148, 25]                           | [341148, 25]   | --       |\n| │    └─(6)Linear                | [341148, 25]                           | [341148, 2]    | 52       |\n+---------------------------------+----------------------------------------+----------------+----------+'
+Arguments: ()
+2025-03-29 22:34:22,482 [INFO ] +---------------------------------+----------------------------------------+----------------+----------+
+| Layer                           | Input Shape                            | Output Shape   | #Param   |
+|---------------------------------+----------------------------------------+----------------+----------|
+| GINe                            | [50614, 1], [2, 341148], [341148, 4]   | [341148, 2]    | 38,535   |
+| ├─(node_emb)Linear              | [50614, 1]                             | [50614, 66]    | 132      |
+| ├─(edge_emb)Linear              | [341148, 4]                            | [341148, 66]   | 330      |
+| ├─(convs)ModuleList             | --                                     | --             | 26,532   |
+| │    └─(0)GINEConv              | [50614, 66], [2, 341148], [341148, 66] | [50614, 66]    | 13,266   |
+| │    └─(1)GINEConv              | [50614, 66], [2, 341148], [341148, 66] | [50614, 66]    | 13,266   |
+| ├─(emlps)ModuleList             | --                                     | --             | --       |
+| ├─(batch_norms)ModuleList       | --                                     | --             | 264      |
+| │    └─(0)BatchNorm             | [50614, 66]                            | [50614, 66]    | 132      |
+| │    │    └─(module)BatchNorm1d | [50614, 66]                            | [50614, 66]    | 132      |
+| │    └─(1)BatchNorm             | [50614, 66]                            | [50614, 66]    | 132      |
+| │    │    └─(module)BatchNorm1d | [50614, 66]                            | [50614, 66]    | 132      |
+| ├─(mlp)Sequential               | [341148, 198]                          | [341148, 2]    | 11,277   |
+| │    └─(0)Linear                | [341148, 198]                          | [341148, 50]   | 9,950    |
+| │    └─(1)ReLU                  | [341148, 50]                           | [341148, 50]   | --       |
+| │    └─(2)Dropout               | [341148, 50]                           | [341148, 50]   | --       |
+| │    └─(3)Linear                | [341148, 50]                           | [341148, 25]   | 1,275    |
+| │    └─(4)ReLU                  | [341148, 25]                           | [341148, 25]   | --       |
+| │    └─(5)Dropout               | [341148, 25]                           | [341148, 25]   | --       |
+| │    └─(6)Linear                | [341148, 25]                           | [341148, 2]    | 52       |
++---------------------------------+----------------------------------------+----------------+----------+
+2025-03-29 22:35:12,877 [INFO ] Train F1: 0.0020
+2025-03-29 22:35:54,448 [INFO ] Validation F1: 0.0000
+2025-03-29 22:35:54,448 [INFO ] Test F1: 0.0000
+2025-03-29 22:36:46,607 [INFO ] Train F1: 0.0000
