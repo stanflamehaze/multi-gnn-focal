@@ -1,432 +1,482 @@
-# import torch
-# import tqdm
-# from sklearn.metrics import f1_score
-# from train_util import AddEgoIds, extract_param, add_arange_ids, get_loaders, evaluate_homo, evaluate_hetero, save_model, load_model
-# from models import GINe, PNA, GATe, RGCN
-# from torch_geometric.data import Data, HeteroData
-# from torch_geometric.nn import to_hetero, summary
-# from torch_geometric.utils import degree
-# import wandb
-# import logging
-# from train_util import FocalLoss # Add this line
-
-
 import torch
 import tqdm
-# import wandb  # Make sure wandb is imported
-# import logging
-import json   # Needed for extract_param if using json
-
-from sklearn.metrics import f1_score
-# Import necessary functions and classes from your other files
-from train_util import (
-    AddEgoIds, extract_param, add_arange_ids, get_loaders,
-    evaluate_homo, evaluate_hetero, save_model, load_model,
-    FocalLoss  # <-- Make sure FocalLoss is imported from train_util
-)
+# 确保导入所需的指标函数
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
+from train_util import AddEgoIds, extract_param, add_arange_ids, get_loaders, evaluate_homo, evaluate_hetero, save_model, load_model
 from models import GINe, PNA, GATe, RGCN
 from torch_geometric.data import Data, HeteroData
 from torch_geometric.nn import to_hetero, summary
 from torch_geometric.utils import degree
 import wandb
 import logging
+import numpy as np # 确保导入 numpy
 
 def train_homo(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config):
-    #training
-    best_val_f1 = 0
+    """
+    Trains and evaluates a homogenous GNN model.
+    """
+    best_val_f1 = 0  # 可以根据需要更改为 best_val_recall 等指标
+    logging.info(f"Starting homogenous GNN training for {config.epochs} epochs...")
+    logging.info(f"Config: {config}") # 打印配置信息
+
     for epoch in range(config.epochs):
+        model.train()  # 设置模型为训练模式
         total_loss = total_examples = 0
-        preds = []
-        ground_truths = []
-        for batch in tqdm.tqdm(tr_loader, disable=not args.tqdm):
+        preds_epoch = []
+        ground_truths_epoch = []
+        logging.info(f"--- Epoch {epoch+1}/{config.epochs} ---")
+
+        # --- Training Loop ---
+        for batch in tqdm.tqdm(tr_loader, desc=f"Epoch {epoch+1} Training", disable=not args.tqdm):
             optimizer.zero_grad()
-            #select the seed edges from which the batch was created
+            # select the seed edges from which the batch was created
             inds = tr_inds.detach().cpu()
             batch_edge_inds = inds[batch.input_id.detach().cpu()]
             batch_edge_ids = tr_loader.data.edge_attr.detach().cpu()[batch_edge_inds, 0]
             mask = torch.isin(batch.edge_attr[:, 0].detach().cpu(), batch_edge_ids)
 
-            #remove the unique edge id from the edge features, as it's no longer needed
-            batch.edge_attr = batch.edge_attr[:, 1:]
+            # remove the unique edge id from the edge features
+            batch.edge_attr = batch.edge_attr[:, 1:] # [Source 61]
 
             batch.to(device)
-            out = model(batch.x, batch.edge_index, batch.edge_attr)
+            out = model(batch.x, batch.edge_index, batch.edge_attr) # [Source 61]
             pred = out[mask]
             ground_truth = batch.y[mask]
-            preds.append(pred.argmax(dim=-1))
-            ground_truths.append(ground_truth)
-            loss = loss_fn(pred, ground_truth)
 
-            loss.backward()
-            optimizer.step()
+            # Check if ground_truth is empty (can happen in rare cases with sampling)
+            if ground_truth.numel() == 0:
+                logging.warning(f"Epoch {epoch+1}, Batch: Skipping batch due to empty ground truth.")
+                continue
+
+            preds_epoch.append(pred.argmax(dim=-1)) # [Source 62]
+            ground_truths_epoch.append(ground_truth) # [Source 62]
+            loss = loss_fn(pred, ground_truth) # [Source 62]
+
+            loss.backward() # [Source 62]
+            optimizer.step() # [Source 62]
 
             total_loss += float(loss) * pred.numel()
-            total_examples += pred.numel()
+            total_examples += pred.numel() # [Source 62]
 
-        pred = torch.cat(preds, dim=0).detach().cpu().numpy()
-        ground_truth = torch.cat(ground_truths, dim=0).detach().cpu().numpy()
-        f1 = f1_score(ground_truth, pred)
-        wandb.log({"f1/train": f1}, step=epoch)
-        logging.info(f'Train F1: {f1:.4f}')
+        # --- Training Metrics Calculation ---
+        # Ensure there are predictions before calculating metrics
+        if not preds_epoch:
+             logging.warning(f"Epoch {epoch+1}: No predictions recorded during training.")
+             continue # Skip evaluation if training loop didn't produce results
 
-        #evaluate
-        val_f1 = evaluate_homo(val_loader, val_inds, model, val_data, device, args)
-        te_f1 = evaluate_homo(te_loader, te_inds, model, te_data, device, args)
+        pred_train = torch.cat(preds_epoch, dim=0).detach().cpu().numpy() # [Source 63]
+        ground_truth_train = torch.cat(ground_truths_epoch, dim=0).detach().cpu().numpy() # [Source 63]
 
-        wandb.log({"f1/validation": val_f1}, step=epoch)
-        wandb.log({"f1/test": te_f1}, step=epoch)
-        logging.info(f'Validation F1: {val_f1:.4f}')
-        logging.info(f'Test F1: {te_f1:.4f}')
+        # Handle case where ground truth might have only one class after filtering/sampling
+        if len(np.unique(ground_truth_train)) < 2:
+            logging.warning(f"Epoch {epoch+1} Train: Only one class present in ground truth. Metrics might be skewed or invalid.")
+            # Set metrics to NaN or 0, or skip logging as appropriate
+            f1_train, precision_train, recall_train = 0.0, 0.0, 0.0
+            conf_matrix_train = np.zeros((2,2)) # Default empty matrix
+        else:
+            f1_train = f1_score(ground_truth_train, pred_train, zero_division=0) # [Source 63]
+            precision_train = precision_score(ground_truth_train, pred_train, zero_division=0)
+            recall_train = recall_score(ground_truth_train, pred_train, zero_division=0)
+            conf_matrix_train = confusion_matrix(ground_truth_train, pred_train)
 
+        avg_loss_train = total_loss / total_examples if total_examples > 0 else 0
+
+        # --- Logging Training Metrics ---
+        wandb.log({
+            "loss/train": avg_loss_train,
+            "f1/train": f1_train,
+            "precision/train": precision_train,
+            "recall/train": recall_train
+        }, step=epoch) # [Source 63: Existing wandb log]
+        logging.info(f'  Training Loss: {avg_loss_train:.4f}')
+        logging.info(f'  Train Metrics - F1: {f1_train:.4f}, Precision: {precision_train:.4f}, Recall: {recall_train:.4f}')
+        logging.info(f'  Train Confusion Matrix:\n{conf_matrix_train}')
+
+        # --- Evaluation ---
+        model.eval()  # Switch to evaluation mode
+        logging.info("  Evaluating on Validation Set...")
+        val_f1, val_precision, val_recall, val_conf_matrix = evaluate_homo(val_loader, val_inds, model, val_data, device, args) # [Source 63] 更新调用
+        logging.info("  Evaluating on Test Set...")
+        te_f1, te_precision, te_recall, te_conf_matrix = evaluate_homo(te_loader, te_inds, model, te_data, device, args) # [Source 63] 更新调用
+
+        # --- Logging Validation Metrics ---
+        wandb.log({
+            "f1/validation": val_f1,
+            "precision/validation": val_precision,
+            "recall/validation": val_recall
+        }, step=epoch) # [Source 63]
+        logging.info(f'  Validation Metrics - F1: {val_f1:.4f}, Precision: {val_precision:.4f}, Recall: {val_recall:.4f}')
+        logging.info(f'  Validation Confusion Matrix:\n{val_conf_matrix}')
+
+        # --- Logging Test Metrics ---
+        wandb.log({
+            "f1/test": te_f1,
+            "precision/test": te_precision,
+            "recall/test": te_recall
+        }, step=epoch) # [Source 64]
+        logging.info(f'  Test Metrics - F1: {te_f1:.4f}, Precision: {te_precision:.4f}, Recall: {te_recall:.4f}')
+        logging.info(f'  Test Confusion Matrix:\n{te_conf_matrix}')
+
+        # --- Save Best Model Logic ---
+        # (Based on validation F1 score, can be changed)
         if epoch == 0:
-            wandb.log({"best_test_f1": te_f1}, step=epoch)
+            best_val_f1 = val_f1 # Initialize best score
+            wandb.log({
+                "best_test_f1": te_f1,
+                "best_test_precision": te_precision,
+                "best_test_recall": te_recall
+            }, step=epoch) # [Source 64]
+            if args.save_model:
+                 logging.info(f"  Saving model from epoch {epoch+1} (initial best)")
+                 save_model(model, optimizer, epoch, args, data_config) # [Source 65]
+
         elif val_f1 > best_val_f1:
             best_val_f1 = val_f1
-            wandb.log({"best_test_f1": te_f1}, step=epoch)
+            logging.info(f"  New best validation F1 found: {best_val_f1:.4f}")
+            wandb.log({
+                "best_test_f1": te_f1,
+                "best_test_precision": te_precision,
+                "best_test_recall": te_recall
+             }, step=epoch) # [Source 64]
             if args.save_model:
-                save_model(model, optimizer, epoch, args, data_config)
-    
+                logging.info(f"  Saving model from epoch {epoch+1}")
+                save_model(model, optimizer, epoch, args, data_config) # [Source 65]
+
+    logging.info("Homogenous GNN training finished.")
     return model
 
 def train_hetero(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config):
-    #training
-    best_val_f1 = 0
+    """
+    Trains and evaluates a heterogenous GNN model.
+    """
+    best_val_f1 = 0 # 或根据需要更改为 best_val_recall 等
+    logging.info(f"Starting heterogenous GNN training for {config.epochs} epochs...")
+    logging.info(f"Config: {config}") # 打印配置信息
+
     for epoch in range(config.epochs):
+        model.train() # 设置模型为训练模式
         total_loss = total_examples = 0
-        preds = []
-        ground_truths = []
-        for batch in tqdm.tqdm(tr_loader, disable=not args.tqdm):
+        preds_epoch = []
+        ground_truths_epoch = []
+        logging.info(f"--- Epoch {epoch+1}/{config.epochs} ---")
+
+        # --- Training Loop ---
+        for batch in tqdm.tqdm(tr_loader, desc=f"Epoch {epoch+1} Training", disable=not args.tqdm): # [Source 66]
             optimizer.zero_grad()
-            #select the seed edges from which the batch was created
+            # select the seed edges from which the batch was created
             inds = tr_inds.detach().cpu()
             batch_edge_inds = inds[batch['node', 'to', 'node'].input_id.detach().cpu()]
             batch_edge_ids = tr_loader.data['node', 'to', 'node'].edge_attr.detach().cpu()[batch_edge_inds, 0]
-            mask = torch.isin(batch['node', 'to', 'node'].edge_attr[:, 0].detach().cpu(), batch_edge_ids)
-            
-            #remove the unique edge id from the edge features, as it's no longer needed
-            batch['node', 'to', 'node'].edge_attr = batch['node', 'to', 'node'].edge_attr[:, 1:]
-            batch['node', 'rev_to', 'node'].edge_attr = batch['node', 'rev_to', 'node'].edge_attr[:, 1:]
+            mask = torch.isin(batch['node', 'to', 'node'].edge_attr[:, 0].detach().cpu(), batch_edge_ids) # [Source 66-67]
+
+            # remove the unique edge id from the edge features
+            batch['node', 'to', 'node'].edge_attr = batch['node', 'to', 'node'].edge_attr[:, 1:] # [Source 67]
+            batch['node', 'rev_to', 'node'].edge_attr = batch['node', 'rev_to', 'node'].edge_attr[:, 1:] # [Source 67]
 
             batch.to(device)
-            out = model(batch.x_dict, batch.edge_index_dict, batch.edge_attr_dict)
-            out = out[('node', 'to', 'node')]
+            out = model(batch.x_dict, batch.edge_index_dict, batch.edge_attr_dict) # [Source 68]
+            out = out[('node', 'to', 'node')] # Select output for the target edge type
             pred = out[mask]
-            ground_truth = batch['node', 'to', 'node'].y[mask]
-            preds.append(pred.argmax(dim=-1))
-            ground_truths.append(batch['node', 'to', 'node'].y[mask])
-            loss = loss_fn(pred, ground_truth)
+            ground_truth = batch['node', 'to', 'node'].y[mask] # [Source 68]
 
-            loss.backward()
-            optimizer.step()
+            # Check if ground_truth is empty
+            if ground_truth.numel() == 0:
+                logging.warning(f"Epoch {epoch+1}, Batch: Skipping batch due to empty ground truth.")
+                continue
+
+            preds_epoch.append(pred.argmax(dim=-1)) # [Source 68]
+            ground_truths_epoch.append(ground_truth) # [Source 68]
+            loss = loss_fn(pred, ground_truth) # [Source 68]
+
+            loss.backward() # [Source 69]
+            optimizer.step() # [Source 69]
 
             total_loss += float(loss) * pred.numel()
-            total_examples += pred.numel()
-            
-        pred = torch.cat(preds, dim=0).detach().cpu().numpy()
-        ground_truth = torch.cat(ground_truths, dim=0).detach().cpu().numpy()
-        f1 = f1_score(ground_truth, pred)
-        wandb.log({"f1/train": f1}, step=epoch)
-        logging.info(f'Train F1: {f1:.4f}')
+            total_examples += pred.numel() # [Source 69]
 
-        #evaluate
-        val_f1 = evaluate_hetero(val_loader, val_inds, model, val_data, device, args)
-        te_f1 = evaluate_hetero(te_loader, te_inds, model, te_data, device, args)
+        # --- Training Metrics Calculation ---
+        if not preds_epoch:
+             logging.warning(f"Epoch {epoch+1}: No predictions recorded during training.")
+             continue
 
-        wandb.log({"f1/validation": val_f1}, step=epoch)
-        wandb.log({"f1/test": te_f1}, step=epoch)
-        logging.info(f'Validation F1: {val_f1:.4f}')
-        logging.info(f'Test F1: {te_f1:.4f}')
+        pred_train = torch.cat(preds_epoch, dim=0).detach().cpu().numpy() # [Source 69]
+        ground_truth_train = torch.cat(ground_truths_epoch, dim=0).detach().cpu().numpy() # [Source 69]
 
+        if len(np.unique(ground_truth_train)) < 2:
+            logging.warning(f"Epoch {epoch+1} Train: Only one class present in ground truth. Metrics might be skewed or invalid.")
+            f1_train, precision_train, recall_train = 0.0, 0.0, 0.0
+            conf_matrix_train = np.zeros((2,2))
+        else:
+            f1_train = f1_score(ground_truth_train, pred_train, zero_division=0) # [Source 69]
+            precision_train = precision_score(ground_truth_train, pred_train, zero_division=0)
+            recall_train = recall_score(ground_truth_train, pred_train, zero_division=0)
+            conf_matrix_train = confusion_matrix(ground_truth_train, pred_train)
+
+        avg_loss_train = total_loss / total_examples if total_examples > 0 else 0
+
+        # --- Logging Training Metrics ---
+        wandb.log({
+            "loss/train": avg_loss_train,
+            "f1/train": f1_train,
+            "precision/train": precision_train,
+            "recall/train": recall_train
+        }, step=epoch) # [Source 70]
+        logging.info(f'  Training Loss: {avg_loss_train:.4f}')
+        logging.info(f'  Train Metrics - F1: {f1_train:.4f}, Precision: {precision_train:.4f}, Recall: {recall_train:.4f}')
+        logging.info(f'  Train Confusion Matrix:\n{conf_matrix_train}')
+
+        # --- Evaluation ---
+        model.eval() # Switch to evaluation mode
+        logging.info("  Evaluating on Validation Set...")
+        val_f1, val_precision, val_recall, val_conf_matrix = evaluate_hetero(val_loader, val_inds, model, val_data, device, args) # [Source 70] 更新调用
+        logging.info("  Evaluating on Test Set...")
+        te_f1, te_precision, te_recall, te_conf_matrix = evaluate_hetero(te_loader, te_inds, model, te_data, device, args) # [Source 70] 更新调用
+
+        # --- Logging Validation Metrics ---
+        wandb.log({
+            "f1/validation": val_f1,
+            "precision/validation": val_precision,
+            "recall/validation": val_recall
+        }, step=epoch) # [Source 70]
+        logging.info(f'  Validation Metrics - F1: {val_f1:.4f}, Precision: {val_precision:.4f}, Recall: {val_recall:.4f}')
+        logging.info(f'  Validation Confusion Matrix:\n{val_conf_matrix}')
+
+        # --- Logging Test Metrics ---
+        wandb.log({
+            "f1/test": te_f1,
+            "precision/test": te_precision,
+            "recall/test": te_recall
+        }, step=epoch) # [Source 70]
+        logging.info(f'  Test Metrics - F1: {te_f1:.4f}, Precision: {te_precision:.4f}, Recall: {te_recall:.4f}')
+        logging.info(f'  Test Confusion Matrix:\n{te_conf_matrix}')
+
+        # --- Save Best Model Logic ---
         if epoch == 0:
-            wandb.log({"best_test_f1": te_f1}, step=epoch)
+            best_val_f1 = val_f1 # Initialize best score
+            wandb.log({
+                "best_test_f1": te_f1,
+                "best_test_precision": te_precision,
+                "best_test_recall": te_recall
+             }, step=epoch) # [Source 71]
+            if args.save_model:
+                 logging.info(f"  Saving model from epoch {epoch+1} (initial best)")
+                 save_model(model, optimizer, epoch, args, data_config) # [Source 71]
+
         elif val_f1 > best_val_f1:
             best_val_f1 = val_f1
-            wandb.log({"best_test_f1": te_f1}, step=epoch)
+            logging.info(f"  New best validation F1 found: {best_val_f1:.4f}")
+            wandb.log({
+                "best_test_f1": te_f1,
+                "best_test_precision": te_precision,
+                "best_test_recall": te_recall
+            }, step=epoch) # [Source 71]
             if args.save_model:
-                save_model(model, optimizer, epoch, args, data_config)
-        
-    return model
+                logging.info(f"  Saving model from epoch {epoch+1}")
+                save_model(model, optimizer, epoch, args, data_config) # [Source 71]
+
+    logging.info("Heterogenous GNN training finished.")
+    return model # [Source 72]
 
 def get_model(sample_batch, config, args):
+    """
+    Initializes the GNN model based on configuration.
+    """
     n_feats = sample_batch.x.shape[1] if not isinstance(sample_batch, HeteroData) else sample_batch['node'].x.shape[1]
-    e_dim = (sample_batch.edge_attr.shape[1] - 1) if not isinstance(sample_batch, HeteroData) else (sample_batch['node', 'to', 'node'].edge_attr.shape[1] - 1)
+    # Correctly calculate edge dimension (excluding the added arange ID)
+    e_dim = (sample_batch.edge_attr.shape[1] - 1) if not isinstance(sample_batch, HeteroData) else (sample_batch['node', 'to', 'node'].edge_attr.shape[1] - 1) # [Source 72]
 
-    if args.model == "gin":
+    logging.info(f"Node features: {n_feats}, Edge features: {e_dim}")
+
+    model = None # Initialize model variable
+    if args.model == "gin": # [Source 72]
         model = GINe(
                 num_features=n_feats, num_gnn_layers=config.n_gnn_layers, n_classes=2,
-                n_hidden=round(config.n_hidden), residual=False, edge_updates=args.emlps, edge_dim=e_dim, 
-                dropout=config.dropout, final_dropout=config.final_dropout
+                n_hidden=round(config.n_hidden), residual=False, edge_updates=args.emlps, edge_dim=e_dim,
+                dropout=config.dropout, final_dropout=config.final_dropout # [Source 72-73]
                 )
-    elif args.model == "gat":
+    elif args.model == "gat": # [Source 73]
         model = GATe(
                 num_features=n_feats, num_gnn_layers=config.n_gnn_layers, n_classes=2,
-                n_hidden=round(config.n_hidden), n_heads=round(config.n_heads), 
+                n_hidden=round(config.n_hidden), n_heads=round(config.n_heads),
                 edge_updates=args.emlps, edge_dim=e_dim,
-                dropout=config.dropout, final_dropout=config.final_dropout
+                dropout=config.dropout, final_dropout=config.final_dropout # [Source 73-74]
                 )
-    elif args.model == "pna":
+    elif args.model == "pna": # [Source 74]
         if not isinstance(sample_batch, HeteroData):
-            d = degree(sample_batch.edge_index[1], dtype=torch.long)
+            d = degree(sample_batch.edge_index[1], dtype=torch.long) # [Source 74]
         else:
-            index = torch.cat((sample_batch['node', 'to', 'node'].edge_index[1], sample_batch['node', 'rev_to', 'node'].edge_index[1]), 0)
-            d = degree(index, dtype=torch.long)
-        deg = torch.bincount(d, minlength=1)
+            index = torch.cat((sample_batch['node', 'to', 'node'].edge_index[1], sample_batch['node', 'rev_to', 'node'].edge_index[1]), 0) # [Source 74]
+            d = degree(index, dtype=torch.long) # [Source 75]
+        deg = torch.bincount(d, minlength=1) # [Source 75]
+        logging.info(f"Node degrees for PNA: {deg[:10]}...") # Log first few degrees
         model = PNA(
             num_features=n_feats, num_gnn_layers=config.n_gnn_layers, n_classes=2,
             n_hidden=round(config.n_hidden), edge_updates=args.emlps, edge_dim=e_dim,
-            dropout=config.dropout, deg=deg, final_dropout=config.final_dropout
+            dropout=config.dropout, deg=deg, final_dropout=config.final_dropout # [Source 75]
             )
-    elif config.model == "rgcn":
-        model = RGCN(
-            num_features=n_feats, edge_dim=e_dim, num_relations=8, num_gnn_layers=round(config.n_gnn_layers),
-            n_classes=2, n_hidden=round(config.n_hidden),
-            edge_update=args.emlps, dropout=config.dropout, final_dropout=config.final_dropout, n_bases=None #(maybe)
-        )
-    
+    elif args.model == "rgcn": # Corrected from config.model to args.model [Source 75]
+        # RGCN expects edge_type as the last feature if not provided separately.
+        # Ensure edge_dim passed here excludes the type if it's handled by RGCNConv internally.
+        # Assuming RGCNConv handles relation type via edge_type argument, edge_dim is other features.
+         model = RGCN(
+             num_features=n_feats, edge_dim=e_dim, num_relations=8, # Assuming 8 relation types based on model file [Source 76]
+             num_gnn_layers=round(config.n_gnn_layers),
+             n_classes=2, n_hidden=round(config.n_hidden),
+             edge_update=args.emlps, dropout=config.dropout, final_dropout=config.final_dropout, n_bases=None # [Source 76]
+         )
+    else:
+         raise ValueError(f"Unknown model type: {args.model}")
+
     return model
 
-# def train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config):
-#     #set device
-#     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-#     #define a model config dictionary and wandb logging at the same time
-#     wandb.init(
-#         mode="disabled" if args.testing else "online",
-#         project="your_proj_name", #replace this with your wandb project name if you want to use wandb logging
-
-#         config={
-#             "epochs": args.n_epochs,
-#             "batch_size": args.batch_size,
-#             "model": args.model,
-#             "data": args.data,
-#             "num_neighbors": args.num_neighs,
-#             "lr": extract_param("lr", args),
-#             "n_hidden": extract_param("n_hidden", args),
-#             "n_gnn_layers": extract_param("n_gnn_layers", args),
-#             "loss": "ce",
-#             "w_ce1": extract_param("w_ce1", args),
-#             "w_ce2": extract_param("w_ce2", args),
-#             "dropout": extract_param("dropout", args),
-#             "final_dropout": extract_param("final_dropout", args),
-#             "n_heads": extract_param("n_heads", args) if args.model == 'gat' else None
-#         }
-        
-#     )
-
-#     config = wandb.config
-
-
-
-#     #set the transform if ego ids should be used
-#     if args.ego:
-#         transform = AddEgoIds()
-#     else:
-#         transform = None
-
-#     #add the unique ids to later find the seed edges
-#     add_arange_ids([tr_data, val_data, te_data])
-
-#     tr_loader, val_loader, te_loader = get_loaders(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, transform, args)
-
-#     #get the model
-#     sample_batch = next(iter(tr_loader))
-#     model = get_model(sample_batch, config, args)
-
-#     if args.reverse_mp:
-#         model = to_hetero(model, te_data.metadata(), aggr='mean')
-    
-#     if args.finetune:
-#         model, optimizer = load_model(model, device, args, config, data_config)
-#     else:
-#         model.to(device)
-#         optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
-    
-#     sample_batch.to(device)
-#     sample_x = sample_batch.x if not isinstance(sample_batch, HeteroData) else sample_batch.x_dict
-#     sample_edge_index = sample_batch.edge_index if not isinstance(sample_batch, HeteroData) else sample_batch.edge_index_dict
-#     if isinstance(sample_batch, HeteroData):
-#         sample_batch['node', 'to', 'node'].edge_attr = sample_batch['node', 'to', 'node'].edge_attr[:, 1:]
-#         sample_batch['node', 'rev_to', 'node'].edge_attr = sample_batch['node', 'rev_to', 'node'].edge_attr[:, 1:]
-#     else:
-#         sample_batch.edge_attr = sample_batch.edge_attr[:, 1:]
-#     sample_edge_attr = sample_batch.edge_attr if not isinstance(sample_batch, HeteroData) else sample_batch.edge_attr_dict
-#     logging.info(summary(model, sample_x, sample_edge_index, sample_edge_attr))
-    
-#     loss_fn = torch.nn.CrossEntropyLoss(weight=torch.FloatTensor([config.w_ce1, config.w_ce2]).to(device))
-
-#     if args.reverse_mp:
-#         model = train_hetero(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config)
-#     else:
-#         model = train_homo(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config)
-    
-#     wandb.finish()
-
-# =============================================
-# Updated train_gnn function
-# =============================================
 def train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config):
-    # set device
+    """
+    Main function to set up and initiate GNN training.
+    """
+    #set device
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     logging.info(f"Using device: {device}")
 
-    # --- Dynamically build configuration for wandb ---
-    run_config = {
-        "epochs": args.n_epochs,
-        "batch_size": args.batch_size,
-        "model": args.model,
-        "data": args.data,
-        "num_neighbors": args.num_neighs,
-        "lr": extract_param("lr", args),
-        "n_hidden": extract_param("n_hidden", args),
-        "n_gnn_layers": extract_param("n_gnn_layers", args),
-        "dropout": extract_param("dropout", args),
-        "final_dropout": extract_param("final_dropout", args),
-        "n_heads": extract_param("n_heads", args) if args.model == 'gat' else None
-        # Add any other general parameters extracted here
-    }
-
-    # Extract the loss type from the settings file
-    loss_type = extract_param("loss", args)
-    if loss_type is None:
-        logging.warning(f"Loss type not found in settings for model {args.model}, defaulting to 'ce'.")
-        loss_type = "ce" # Default or raise error
-    run_config["loss"] = loss_type
-    logging.info(f"Extracted loss type: {loss_type}")
-
-    # Add loss-specific parameters to the config
-    if loss_type == "focal":
-        run_config["alpha"] = extract_param("alpha", args)
-        run_config["gamma"] = extract_param("gamma", args)
-        # Provide a default gamma if not specified in settings
-        if run_config["gamma"] is None:
-            logging.warning("Gamma not found for focal loss, defaulting to 2.0.")
-            run_config["gamma"] = 2.0
-        # Alpha can be None (no weighting), float, or list - handled by FocalLoss class
-        logging.info(f"Focal loss params: alpha={run_config['alpha']}, gamma={run_config['gamma']}")
-
-    elif loss_type == "ce":
-        run_config["w_ce1"] = extract_param("w_ce1", args)
-        run_config["w_ce2"] = extract_param("w_ce2", args)
-        # Provide default weights if not specified
-        if run_config["w_ce1"] is None:
-            logging.warning("w_ce1 not found for CE loss, defaulting to 1.0.")
-            run_config["w_ce1"] = 1.0
-        if run_config["w_ce2"] is None:
-            logging.warning("w_ce2 not found for CE loss, defaulting to 1.0.")
-            run_config["w_ce2"] = 1.0
-        logging.info(f"CE loss params: weights=[{run_config['w_ce1']}, {run_config['w_ce2']}]")
-    else:
-        logging.error(f"Unsupported loss type '{loss_type}' configured for model {args.model}.")
-        raise ValueError(f"Unsupported loss type: {loss_type}")
-
-    # Initialize wandb with the dynamically created config
+    #define a model config dictionary and wandb logging at the same time
+    wandb_mode = "disabled" if args.testing else "online"
+    project_name = "aml_gnn_project" # Replace with your desired project name
     wandb.init(
-        mode="disabled" if args.testing else "online",
-        project="your_proj_name", # replace this with your wandb project name
-        config=run_config
+        mode=wandb_mode, # [Source 77]
+        project=project_name, # [Source 77] - Use a variable
+        config={ # [Source 77]
+            "epochs": args.n_epochs,
+            "batch_size": args.batch_size,
+            "model": args.model,
+            "data": args.data,
+            "num_neighbors": args.num_neighs, # [Source 78]
+            "lr": extract_param("lr", args), # [Source 78]
+            "n_hidden": extract_param("n_hidden", args), # [Source 78]
+            "n_gnn_layers": extract_param("n_gnn_layers", args), # [Source 78]
+            "loss": "ce", # [Source 78]
+            "w_ce1": extract_param("w_ce1", args), # [Source 78]
+            "w_ce2": extract_param("w_ce2", args), # [Source 78]
+            "dropout": extract_param("dropout", args), # [Source 78-79]
+            "final_dropout": extract_param("final_dropout", args), # [Source 79]
+            "n_heads": extract_param("n_heads", args) if args.model == 'gat' else None, # [Source 79]
+            # Include adaptations in config for tracking
+            "emlps": args.emlps,
+            "reverse_mp": args.reverse_mp,
+            "ports": args.ports,
+            "tds": args.tds,
+            "ego": args.ego,
+            "seed": args.seed
+        }
     )
-    config = wandb.config # Use the config object from wandb
+    # Check if wandb is online and log run name/ID
+    if wandb.run is not None:
+        logging.info(f"Wandb run initialized: {wandb.run.name} (ID: {wandb.run.id})")
+        logging.info(f"Wandb dashboard: {wandb.run.get_url()}")
 
-    # set the transform if ego ids should be used
-    if args.ego:
+    config = wandb.config # [Source 79]
+
+    #set the transform if ego ids should be used
+    if args.ego: # [Source 79]
         transform = AddEgoIds()
+        logging.info("Using AddEgoIds transform.")
     else:
         transform = None
 
-    # add the unique ids to later find the seed edges
-    add_arange_ids([tr_data, val_data, te_data])
+    #add the unique ids to later find the seed edges
+    add_arange_ids([tr_data, val_data, te_data]) # [Source 80]
 
-    tr_loader, val_loader, te_loader = get_loaders(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, transform, args)
+    tr_loader, val_loader, te_loader = get_loaders(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, transform, args) # [Source 80]
 
-    # get the model
-    sample_batch = next(iter(tr_loader))
-    model = get_model(sample_batch, config, args) # Pass the wandb config
+    #get the model
+    # Need a sample batch to determine input/output sizes correctly
+    try:
+        sample_batch = next(iter(tr_loader)) # [Source 80]
+    except StopIteration:
+        logging.error("Training loader is empty! Cannot initialize model.")
+        return
 
-    if args.reverse_mp:
-        # Ensure metadata is correct if using reverse MP with hetero data
+    model = get_model(sample_batch, config, args) # [Source 80]
+
+    # Convert model to heterogenous if reverse MP is enabled
+    if args.reverse_mp: # [Source 80]
+        if not isinstance(tr_data, HeteroData):
+             logging.error("Reverse MP selected, but data is not HeteroData. Aborting.")
+             return
+        logging.info("Converting model to heterogeneous.")
+        model = to_hetero(model, tr_data.metadata(), aggr='mean') # Use tr_data metadata
+
+    # Load or initialize model and optimizer
+    if args.finetune: # [Source 80]
+        logging.info(f"Finetuning model from checkpoint: {args.unique_name}")
         try:
-            metadata = te_data.metadata()
-            model = to_hetero(model, metadata, aggr='mean')
-            logging.info("Converted model to heterogeneous.")
-        except Exception as e:
-            logging.error(f"Failed to convert model to heterogeneous: {e}")
-            # Handle error appropriately, maybe exit or proceed with caution
-            raise e
-
-    # Load or initialize optimizer
-    if args.finetune:
-        try:
-            model, optimizer = load_model(model, device, args, config, data_config)
-            logging.info(f"Loaded model and optimizer for fine-tuning from checkpoint {args.unique_name}.")
+             model, optimizer = load_model(model, device, args, config, data_config) # [Source 80]
         except FileNotFoundError:
-             logging.error(f"Finetune checkpoint not found: {data_config['paths']['model_to_load']}/checkpoint_{args.unique_name}.tar")
-             raise
+             logging.error(f"Checkpoint file not found for finetuning: {data_config['paths']['model_to_load']}/checkpoint_{args.unique_name}.tar")
+             return
     else:
-        model.to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
-        logging.info(f"Initialized new model and optimizer with lr={config.lr}.")
+        logging.info("Initializing new model parameters and optimizer.")
+        model.to(device) # [Source 81]
+        optimizer = torch.optim.Adam(model.parameters(), lr=config.lr) # [Source 81]
 
     # Log model summary
+    # Need to handle device placement and remove ID from sample_batch attributes
     try:
-        # Prepare sample data for summary (ensure it's on the right device)
-        sample_batch.to(device)
-        sample_x = sample_batch.x if not isinstance(sample_batch, HeteroData) else sample_batch.x_dict
-        sample_edge_index = sample_batch.edge_index if not isinstance(sample_batch, HeteroData) else sample_batch.edge_index_dict
+        sample_batch.to(device) # [Source 81]
+        sample_x = sample_batch.x if not isinstance(sample_batch, HeteroData) else sample_batch.x_dict # [Source 81]
+        sample_edge_index = sample_batch.edge_index if not isinstance(sample_batch, HeteroData) else sample_batch.edge_index_dict # [Source 81]
 
-        # Create temporary sample edge attributes without the ID column
+        # Temporarily remove ID for summary
         if isinstance(sample_batch, HeteroData):
-             sample_edge_attr_dict = {}
-             for edge_type, edge_store in sample_batch.edge_items():
-                 if 'edge_attr' in edge_store and edge_store.edge_attr is not None:
-                     sample_edge_attr_dict[edge_type] = edge_store.edge_attr[:, 1:] # Remove ID column
-                 else:
-                      sample_edge_attr_dict[edge_type] = None # Or handle as needed if no edge_attr
-             sample_edge_attr = sample_edge_attr_dict
+            id_attr_fwd = sample_batch['node', 'to', 'node'].edge_attr[:, 0].clone()
+            id_attr_rev = sample_batch['node', 'rev_to', 'node'].edge_attr[:, 0].clone()
+            sample_batch['node', 'to', 'node'].edge_attr = sample_batch['node', 'to', 'node'].edge_attr[:, 1:] # [Source 81]
+            sample_batch['node', 'rev_to', 'node'].edge_attr = sample_batch['node', 'rev_to', 'node'].edge_attr[:, 1:] # [Source 81]
         else:
-            if sample_batch.edge_attr is not None:
-                sample_edge_attr = sample_batch.edge_attr[:, 1:] # Remove ID column
-            else:
-                sample_edge_attr = None
+            id_attr = sample_batch.edge_attr[:, 0].clone()
+            sample_batch.edge_attr = sample_batch.edge_attr[:, 1:] # [Source 81]
 
-        logging.info("Model Summary:\n" + str(summary(model, sample_x, sample_edge_index, sample_edge_attr)))
+        sample_edge_attr = sample_batch.edge_attr if not isinstance(sample_batch, HeteroData) else sample_batch.edge_attr_dict # [Source 81-82]
+
+        # Get summary (might need adjustment based on model's forward signature)
+        # summary function might not work perfectly with all custom models or heterogenous data
+        try:
+             # For Hetero models, summary might require specific edge_type argument or adaptation
+             if isinstance(sample_batch, HeteroData):
+                  logging.info("Model Summary (Hetero - may be partial):")
+                  # logging.info(summary(model, sample_x, sample_edge_index, sample_edge_attr)) # Often fails for hetero
+                  logging.info(model) # Print model structure instead
+             else:
+                   logging.info("Model Summary:")
+                   logging.info(summary(model, sample_x, sample_edge_index, sample_edge_attr)) # [Source 82]
+        except Exception as e:
+            logging.warning(f"Could not generate model summary: {e}")
+            logging.info(f"Model Structure:\n{model}")
+
+
+        # Add ID back to sample batch if needed elsewhere (though usually not needed after summary)
+        # Restore the ID attribute if necessary (optional, depends if sample_batch is reused)
+        if isinstance(sample_batch, HeteroData):
+            sample_batch['node', 'to', 'node'].edge_attr = torch.cat([id_attr_fwd.unsqueeze(1), sample_batch['node', 'to', 'node'].edge_attr], dim=1)
+            sample_batch['node', 'rev_to', 'node'].edge_attr = torch.cat([id_attr_rev.unsqueeze(1), sample_batch['node', 'rev_to', 'node'].edge_attr], dim=1)
+        else:
+            sample_batch.edge_attr = torch.cat([id_attr.unsqueeze(1), sample_batch.edge_attr], dim=1)
+
     except Exception as e:
-        logging.error(f"Could not generate model summary: {e}")
-        # Log structure details manually if summary fails
-        logging.info(f"Model: {model}")
-        if isinstance(sample_batch, HeteroData):
-            logging.info(f"Sample Batch Metadata: {sample_batch.metadata()}")
-            logging.info(f"Sample x_dict keys: {sample_batch.x_dict.keys()}")
-            logging.info(f"Sample edge_index_dict keys: {sample_batch.edge_index_dict.keys()}")
-        else:
-             logging.info(f"Sample Batch Keys: {sample_batch.keys}")
+        logging.error(f"Error during model summary preparation: {e}")
 
 
-    # --- Instantiate the loss function based on config ---
-    if config.loss == "focal":
-        loss_fn = FocalLoss(alpha=config.alpha, gamma=config.gamma, reduction='mean').to(device)
-        logging.info(f"Instantiated Focal Loss (alpha={config.alpha}, gamma={config.gamma})")
-    elif config.loss == "ce":
-        ce_weights = torch.FloatTensor([config.w_ce1, config.w_ce2]).to(device)
-        loss_fn = torch.nn.CrossEntropyLoss(weight=ce_weights).to(device)
-        logging.info(f"Instantiated Cross Entropy Loss (weights=[{config.w_ce1}, {config.w_ce2}])")
-    else:
-        # This case should ideally be caught earlier, but added for safety
-        logging.error(f"Trying to instantiate unsupported loss: {config.loss}")
-        raise ValueError(f"Unsupported loss type during instantiation: {config.loss}")
-    # --- Loss function instantiated ---
+    # Define loss function
+    loss_fn = torch.nn.CrossEntropyLoss(weight=torch.FloatTensor([config.w_ce1, config.w_ce2]).to(device)) # [Source 82]
+    logging.info(f"Using CrossEntropyLoss with weights: {[config.w_ce1, config.w_ce2]}")
 
-    # Call the appropriate training loop
+    # Start training based on model type (homo/hetero)
     if args.reverse_mp:
-         logging.info("Starting training with HeteroData (reverse MP enabled)...")
-         model = train_hetero(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config)
+        model = train_hetero(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config) # [Source 82]
     else:
-         logging.info("Starting training with Homogeneous Data...")
-         model = train_homo(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config)
+        model = train_homo(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config) # [Source 82]
 
-    logging.info("Training finished.")
-    wandb.finish()
-    logging.info("Wandb run finished.")
-
-# =============================================
-# End of updated train_gnn function
-# =============================================
+    # Finish wandb run if active
+    if wandb.run is not None:
+        logging.info(f"Finishing wandb run: {wandb.run.name}")
+        wandb.finish() # [Source 82]
+    else:
+         logging.info("Wandb logging was disabled.")

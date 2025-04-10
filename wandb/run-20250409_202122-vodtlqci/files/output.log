@@ -1,0 +1,191 @@
+C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\cuda\__init__.py:235: UserWarning:
+NVIDIA GeForce RTX 5090 with CUDA capability sm_120 is not compatible with the current PyTorch installation.
+The current PyTorch install supports CUDA capabilities sm_50 sm_60 sm_61 sm_70 sm_75 sm_80 sm_86 sm_90.
+If you want to use the NVIDIA GeForce RTX 5090 GPU with PyTorch, please check the instructions at https://pytorch.org/get-started/locally/
+
+  warnings.warn(
+2025-04-09 20:21:23,695 [INFO ] Initialized new model and optimizer with lr=0.0006116418195373612.
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\user\anaconda3\envs\env39\lib\logging\__init__.py", line 1086, in emit
+    stream.write(msg + self.terminator)
+  File "C:\Users\user\anaconda3\envs\env39\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 486-487: character maps to <undefined>
+Call stack:
+  File "C:\Users\user\multi-gnn-focal\main.py", line 41, in <module>
+    main()
+  File "C:\Users\user\multi-gnn-focal\main.py", line 34, in main
+    train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config)
+  File "C:\Users\user\multi-gnn-focal\training.py", line 391, in train_gnn
+    logging.info("Model Summary:\n" + str(summary(model, sample_x, sample_edge_index, sample_edge_attr)))
+Message: 'Model Summary:\n+---------------------------------+-------------------------------------------+----------------+----------+\n| Layer                           | Input Shape                               | Output Shape   | #Param   |\n|---------------------------------+-------------------------------------------+----------------+----------|\n| PNA                             | [193245, 1], [2, 1642488], [1642488, 4]   | [1642488, 2]   | 28,917   |\n| ├─(node_emb)Linear              | [193245, 1]                               | [193245, 20]   | 40       |\n| ├─(edge_emb)Linear              | [1642488, 4]                              | [1642488, 20]  | 100      |\n| ├─(convs)ModuleList             | --                                        | --             | 24,320   |\n| │    └─(0)PNAConv               | [193245, 20], [2, 1642488], [1642488, 20] | [193245, 20]   | 12,160   |\n| │    └─(1)PNAConv               | [193245, 20], [2, 1642488], [1642488, 20] | [193245, 20]   | 12,160   |\n| ├─(emlps)ModuleList             | --                                        | --             | --       |\n| ├─(batch_norms)ModuleList       | --                                        | --             | 80       |\n| │    └─(0)BatchNorm             | [193245, 20]                              | [193245, 20]   | 40       |\n| │    │    └─(module)BatchNorm1d | [193245, 20]                              | [193245, 20]   | 40       |\n| │    └─(1)BatchNorm             | [193245, 20]                              | [193245, 20]   | 40       |\n| │    │    └─(module)BatchNorm1d | [193245, 20]                              | [193245, 20]   | 40       |\n| ├─(mlp)Sequential               | [1642488, 60]                             | [1642488, 2]   | 4,377    |\n| │    └─(0)Linear                | [1642488, 60]                             | [1642488, 50]  | 3,050    |\n| │    └─(1)ReLU                  | [1642488, 50]                             | [1642488, 50]  | --       |\n| │    └─(2)Dropout               | [1642488, 50]                             | [1642488, 50]  | --       |\n| │    └─(3)Linear                | [1642488, 50]                             | [1642488, 25]  | 1,275    |\n| │    └─(4)ReLU                  | [1642488, 25]                             | [1642488, 25]  | --       |\n| │    └─(5)Dropout               | [1642488, 25]                             | [1642488, 25]  | --       |\n| │    └─(6)Linear                | [1642488, 25]                             | [1642488, 2]   | 52       |\n+---------------------------------+-------------------------------------------+----------------+----------+'
+Arguments: ()
+2025-04-09 20:21:24,130 [INFO ] Model Summary:
++---------------------------------+-------------------------------------------+----------------+----------+
+| Layer                           | Input Shape                               | Output Shape   | #Param   |
+|---------------------------------+-------------------------------------------+----------------+----------|
+| PNA                             | [193245, 1], [2, 1642488], [1642488, 4]   | [1642488, 2]   | 28,917   |
+| ├─(node_emb)Linear              | [193245, 1]                               | [193245, 20]   | 40       |
+| ├─(edge_emb)Linear              | [1642488, 4]                              | [1642488, 20]  | 100      |
+| ├─(convs)ModuleList             | --                                        | --             | 24,320   |
+| │    └─(0)PNAConv               | [193245, 20], [2, 1642488], [1642488, 20] | [193245, 20]   | 12,160   |
+| │    └─(1)PNAConv               | [193245, 20], [2, 1642488], [1642488, 20] | [193245, 20]   | 12,160   |
+| ├─(emlps)ModuleList             | --                                        | --             | --       |
+| ├─(batch_norms)ModuleList       | --                                        | --             | 80       |
+| │    └─(0)BatchNorm             | [193245, 20]                              | [193245, 20]   | 40       |
+| │    │    └─(module)BatchNorm1d | [193245, 20]                              | [193245, 20]   | 40       |
+| │    └─(1)BatchNorm             | [193245, 20]                              | [193245, 20]   | 40       |
+| │    │    └─(module)BatchNorm1d | [193245, 20]                              | [193245, 20]   | 40       |
+| ├─(mlp)Sequential               | [1642488, 60]                             | [1642488, 2]   | 4,377    |
+| │    └─(0)Linear                | [1642488, 60]                             | [1642488, 50]  | 3,050    |
+| │    └─(1)ReLU                  | [1642488, 50]                             | [1642488, 50]  | --       |
+| │    └─(2)Dropout               | [1642488, 50]                             | [1642488, 50]  | --       |
+| │    └─(3)Linear                | [1642488, 50]                             | [1642488, 25]  | 1,275    |
+| │    └─(4)ReLU                  | [1642488, 25]                             | [1642488, 25]  | --       |
+| │    └─(5)Dropout               | [1642488, 25]                             | [1642488, 25]  | --       |
+| │    └─(6)Linear                | [1642488, 25]                             | [1642488, 2]   | 52       |
++---------------------------------+-------------------------------------------+----------------+----------+
+2025-04-09 20:21:24,134 [INFO ] Instantiated Focal Loss (alpha=[0.75, 0.25], gamma=2.0)
+2025-04-09 20:21:24,134 [INFO ] Starting training with Homogeneous Data...
+2025-04-09 20:22:11,231 [INFO ] Train F1: 0.0015
+2025-04-09 20:22:37,301 [INFO ] Validation F1: 0.0010
+2025-04-09 20:22:37,301 [INFO ] Test F1: 0.0000
+2025-04-09 20:23:22,575 [INFO ] Train F1: 0.0000
+2025-04-09 20:23:48,009 [INFO ] Validation F1: 0.0000
+2025-04-09 20:23:48,009 [INFO ] Test F1: 0.0000
+2025-04-09 20:24:33,366 [INFO ] Train F1: 0.0000
+2025-04-09 20:24:58,854 [INFO ] Validation F1: 0.0000
+2025-04-09 20:24:58,854 [INFO ] Test F1: 0.0000
+2025-04-09 20:25:43,735 [INFO ] Train F1: 0.0000
+2025-04-09 20:26:09,664 [INFO ] Validation F1: 0.0000
+2025-04-09 20:26:09,664 [INFO ] Test F1: 0.0000
+2025-04-09 20:26:55,385 [INFO ] Train F1: 0.0000
+2025-04-09 20:27:23,488 [INFO ] Validation F1: 0.0000
+2025-04-09 20:27:23,488 [INFO ] Test F1: 0.0000
+2025-04-09 20:28:10,512 [INFO ] Train F1: 0.0000
+2025-04-09 20:28:37,968 [INFO ] Validation F1: 0.0000
+2025-04-09 20:28:37,968 [INFO ] Test F1: 0.0000
+2025-04-09 20:29:25,048 [INFO ] Train F1: 0.0000
+2025-04-09 20:29:52,657 [INFO ] Validation F1: 0.0000
+2025-04-09 20:29:52,657 [INFO ] Test F1: 0.0000
+2025-04-09 20:30:40,751 [INFO ] Train F1: 0.0000
+2025-04-09 20:31:08,102 [INFO ] Validation F1: 0.0000
+2025-04-09 20:31:08,102 [INFO ] Test F1: 0.0000
+2025-04-09 20:31:55,095 [INFO ] Train F1: 0.0000
+2025-04-09 20:32:22,221 [INFO ] Validation F1: 0.0000
+2025-04-09 20:32:22,221 [INFO ] Test F1: 0.0000
+2025-04-09 20:33:09,537 [INFO ] Train F1: 0.0000
+2025-04-09 20:33:35,278 [INFO ] Validation F1: 0.0000
+2025-04-09 20:33:35,278 [INFO ] Test F1: 0.0000
+2025-04-09 20:34:21,343 [INFO ] Train F1: 0.0000
+2025-04-09 20:34:47,770 [INFO ] Validation F1: 0.0000
+2025-04-09 20:34:47,770 [INFO ] Test F1: 0.0000
+2025-04-09 20:35:35,107 [INFO ] Train F1: 0.0000
+2025-04-09 20:36:02,660 [INFO ] Validation F1: 0.0000
+2025-04-09 20:36:02,660 [INFO ] Test F1: 0.0000
+2025-04-09 20:36:51,268 [INFO ] Train F1: 0.0000
+2025-04-09 20:37:19,172 [INFO ] Validation F1: 0.0000
+2025-04-09 20:37:19,172 [INFO ] Test F1: 0.0000
+2025-04-09 20:38:06,665 [INFO ] Train F1: 0.0000
+2025-04-09 20:38:34,709 [INFO ] Validation F1: 0.0000
+2025-04-09 20:38:34,709 [INFO ] Test F1: 0.0000
+2025-04-09 20:39:22,312 [INFO ] Train F1: 0.0000
+2025-04-09 20:39:49,811 [INFO ] Validation F1: 0.0000
+2025-04-09 20:39:49,811 [INFO ] Test F1: 0.0000
+2025-04-09 20:40:37,532 [INFO ] Train F1: 0.0000
+2025-04-09 20:41:04,773 [INFO ] Validation F1: 0.0000
+2025-04-09 20:41:04,773 [INFO ] Test F1: 0.0000
+2025-04-09 20:41:52,696 [INFO ] Train F1: 0.0000
+2025-04-09 20:42:20,576 [INFO ] Validation F1: 0.0000
+2025-04-09 20:42:20,576 [INFO ] Test F1: 0.0000
+2025-04-09 20:43:08,557 [INFO ] Train F1: 0.0000
+2025-04-09 20:43:36,334 [INFO ] Validation F1: 0.0000
+2025-04-09 20:43:36,334 [INFO ] Test F1: 0.0000
+2025-04-09 20:44:24,732 [INFO ] Train F1: 0.0000
+2025-04-09 20:44:52,540 [INFO ] Validation F1: 0.0000
+2025-04-09 20:44:52,541 [INFO ] Test F1: 0.0000
+2025-04-09 20:45:40,061 [INFO ] Train F1: 0.0000
+2025-04-09 20:46:07,323 [INFO ] Validation F1: 0.0000
+2025-04-09 20:46:07,323 [INFO ] Test F1: 0.0000
+2025-04-09 20:46:53,595 [INFO ] Train F1: 0.0000
+2025-04-09 20:47:20,045 [INFO ] Validation F1: 0.0000
+2025-04-09 20:47:20,045 [INFO ] Test F1: 0.0000
+2025-04-09 20:48:06,576 [INFO ] Train F1: 0.0000
+2025-04-09 20:48:33,520 [INFO ] Validation F1: 0.0000
+2025-04-09 20:48:33,520 [INFO ] Test F1: 0.0000
+2025-04-09 20:49:20,398 [INFO ] Train F1: 0.0000
+2025-04-09 20:49:47,403 [INFO ] Validation F1: 0.0000
+2025-04-09 20:49:47,403 [INFO ] Test F1: 0.0000
+2025-04-09 20:50:34,589 [INFO ] Train F1: 0.0000
+2025-04-09 20:51:01,379 [INFO ] Validation F1: 0.0000
+2025-04-09 20:51:01,380 [INFO ] Test F1: 0.0000
+2025-04-09 20:51:48,646 [INFO ] Train F1: 0.0000
+2025-04-09 20:52:15,191 [INFO ] Validation F1: 0.0000
+2025-04-09 20:52:15,193 [INFO ] Test F1: 0.0000
+2025-04-09 20:53:01,960 [INFO ] Train F1: 0.0000
+2025-04-09 20:53:29,472 [INFO ] Validation F1: 0.0000
+2025-04-09 20:53:29,472 [INFO ] Test F1: 0.0000
+2025-04-09 20:54:16,664 [INFO ] Train F1: 0.0000
+2025-04-09 20:54:43,763 [INFO ] Validation F1: 0.0000
+2025-04-09 20:54:43,763 [INFO ] Test F1: 0.0000
+2025-04-09 20:55:31,156 [INFO ] Train F1: 0.0000
+2025-04-09 20:55:59,132 [INFO ] Validation F1: 0.0000
+2025-04-09 20:55:59,133 [INFO ] Test F1: 0.0000
+2025-04-09 20:56:46,662 [INFO ] Train F1: 0.0000
+2025-04-09 20:57:13,971 [INFO ] Validation F1: 0.0000
+2025-04-09 20:57:13,971 [INFO ] Test F1: 0.0000
+2025-04-09 20:58:01,290 [INFO ] Train F1: 0.0000
+2025-04-09 20:58:28,972 [INFO ] Validation F1: 0.0000
+2025-04-09 20:58:28,972 [INFO ] Test F1: 0.0012
+2025-04-09 20:59:15,619 [INFO ] Train F1: 0.0000
+2025-04-09 20:59:42,980 [INFO ] Validation F1: 0.0000
+2025-04-09 20:59:42,980 [INFO ] Test F1: 0.0000
+2025-04-09 21:00:30,434 [INFO ] Train F1: 0.0000
+2025-04-09 21:00:57,870 [INFO ] Validation F1: 0.0000
+2025-04-09 21:00:57,870 [INFO ] Test F1: 0.0000
+2025-04-09 21:01:45,281 [INFO ] Train F1: 0.0000
+2025-04-09 21:02:13,304 [INFO ] Validation F1: 0.0000
+2025-04-09 21:02:13,304 [INFO ] Test F1: 0.0000
+2025-04-09 21:03:00,661 [INFO ] Train F1: 0.0000
+2025-04-09 21:03:27,524 [INFO ] Validation F1: 0.0000
+2025-04-09 21:03:27,524 [INFO ] Test F1: 0.0000
+2025-04-09 21:04:12,404 [INFO ] Train F1: 0.0000
+2025-04-09 21:04:38,054 [INFO ] Validation F1: 0.0000
+2025-04-09 21:04:38,055 [INFO ] Test F1: 0.0000
+2025-04-09 21:05:23,173 [INFO ] Train F1: 0.0000
+2025-04-09 21:05:48,799 [INFO ] Validation F1: 0.0000
+2025-04-09 21:05:48,799 [INFO ] Test F1: 0.0000
+2025-04-09 21:06:33,723 [INFO ] Train F1: 0.0000
+2025-04-09 21:06:59,193 [INFO ] Validation F1: 0.0000
+2025-04-09 21:06:59,193 [INFO ] Test F1: 0.0000
+2025-04-09 21:07:47,660 [INFO ] Train F1: 0.0000
+2025-04-09 21:08:13,065 [INFO ] Validation F1: 0.0000
+2025-04-09 21:08:13,065 [INFO ] Test F1: 0.0000
+2025-04-09 21:08:57,630 [INFO ] Train F1: 0.0000
+2025-04-09 21:09:22,971 [INFO ] Validation F1: 0.0000
+2025-04-09 21:09:22,971 [INFO ] Test F1: 0.0000
+2025-04-09 21:10:07,582 [INFO ] Train F1: 0.0000
+2025-04-09 21:10:32,982 [INFO ] Validation F1: 0.0000
+2025-04-09 21:10:32,982 [INFO ] Test F1: 0.0000
+2025-04-09 21:11:17,577 [INFO ] Train F1: 0.0000
+2025-04-09 21:11:42,752 [INFO ] Validation F1: 0.0000
+2025-04-09 21:11:42,752 [INFO ] Test F1: 0.0000
+2025-04-09 21:12:27,179 [INFO ] Train F1: 0.0000
+2025-04-09 21:12:52,472 [INFO ] Validation F1: 0.0000
+2025-04-09 21:12:52,472 [INFO ] Test F1: 0.0012
+2025-04-09 21:13:36,982 [INFO ] Train F1: 0.0000
+2025-04-09 21:14:02,174 [INFO ] Validation F1: 0.0000
+2025-04-09 21:14:02,174 [INFO ] Test F1: 0.0000
+2025-04-09 21:14:46,606 [INFO ] Train F1: 0.0000
+2025-04-09 21:15:11,722 [INFO ] Validation F1: 0.0000
+2025-04-09 21:15:11,723 [INFO ] Test F1: 0.0000
+2025-04-09 21:15:56,254 [INFO ] Train F1: 0.0000
+2025-04-09 21:16:21,550 [INFO ] Validation F1: 0.0000
+2025-04-09 21:16:21,550 [INFO ] Test F1: 0.0000
+2025-04-09 21:17:06,120 [INFO ] Train F1: 0.0000
+2025-04-09 21:17:31,217 [INFO ] Validation F1: 0.0000
+2025-04-09 21:17:31,217 [INFO ] Test F1: 0.0000
+2025-04-09 21:18:15,680 [INFO ] Train F1: 0.0000
+2025-04-09 21:18:40,801 [INFO ] Validation F1: 0.0000
+2025-04-09 21:18:40,801 [INFO ] Test F1: 0.0000

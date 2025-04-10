@@ -4,14 +4,10 @@ from torch_geometric.transforms import BaseTransform
 from typing import Union
 from torch_geometric.data import Data, HeteroData
 from torch_geometric.loader import LinkNeighborLoader
-from sklearn.metrics import f1_score
+# 从 sklearn.metrics 导入所需函数
+from sklearn.metrics import f1_score, confusion_matrix, precision_score, recall_score # [Source 83: Existing f1_score import]
 import json
-# Add these imports at the top of train_util.txt if not already present
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import logging # Already present
-
+import numpy as np # 确保导入 numpy
 
 class AddEgoIds(BaseTransform):
     r"""Add IDs to the centre nodes of the batch.
@@ -34,76 +30,6 @@ class AddEgoIds(BaseTransform):
             data['node'].x = torch.cat([x, ids], dim=1)
         
         return data
-    
-# Add the FocalLoss class definition
-class FocalLoss(nn.Module):
-    def __init__(self, alpha=None, gamma=2.0, reduction='mean'):
-        """
-        Focal Loss for multi-class classification.
-        Assumes inputs are raw logits and targets are class indices.
-        alpha: Weighting factor for each class. Can be a float (same for all)
-               or a list/tensor of size num_classes. If None, defaults to equal weight.
-               For binary cases, often a single float refers to the weight of class 1.
-               To be explicit, provide a list/tensor like [alpha_0, alpha_1].
-        gamma: Focusing parameter.
-        reduction: 'mean', 'sum', or 'none'.
-        """
-        super(FocalLoss, self).__init__()
-        self.gamma = gamma
-        self.reduction = reduction
-        # alpha might be passed as a list from config, convert to tensor
-        if alpha is not None:
-             if isinstance(alpha, list):
-                 self.alpha = torch.tensor(alpha)
-             elif isinstance(alpha, (float, int)):
-                 # Handle single float alpha for binary case (alpha for class 1, 1-alpha for class 0)
-                 # Assumes class 1 is the positive class
-                 self.alpha = torch.tensor([1-alpha, alpha], dtype=torch.float32)
-             elif torch.is_tensor(alpha):
-                 self.alpha = alpha
-             else:
-                 raise TypeError("alpha must be float, list, or tensor.")
-        else:
-            self.alpha = None
-
-
-    def forward(self, inputs, targets):
-        # Ensure alpha tensor is on the same device as inputs if it exists
-        if self.alpha is not None and self.alpha.device != inputs.device:
-            self.alpha = self.alpha.to(inputs.device)
-
-        # Calculate log probabilities (log_softmax)
-        log_pt = F.log_softmax(inputs, dim=1)
-
-        # Gather the log probabilities corresponding to the true classes
-        log_pt = log_pt.gather(1, targets.long().view(-1, 1)).squeeze(1) # Ensure targets are long type
-
-        # Calculate probabilities
-        pt = log_pt.exp()
-
-        # Calculate the cross-entropy loss component (without reduction)
-        ce_loss = -log_pt # Equivalent to NLLLoss on log_softmax output
-
-        # Calculate the focal loss modulator
-        modulator = (1 - pt) ** self.gamma
-
-        # Get alpha weights for each sample
-        if self.alpha is not None:
-             # Gather alpha values based on target class for each sample
-             alpha_t = self.alpha.gather(0, targets.long()) # Ensure targets are long type
-             focal_loss = alpha_t * modulator * ce_loss
-        else:
-             # No alpha weighting
-             focal_loss = modulator * ce_loss
-
-        # Apply reduction
-        if self.reduction == 'mean':
-            return focal_loss.mean()
-        elif self.reduction == 'sum':
-            return focal_loss.sum()
-        else: # 'none'
-            return focal_loss
-        
 
 def extract_param(parameter_name: str, args) -> float:
     """
@@ -116,23 +42,11 @@ def extract_param(parameter_name: str, args) -> float:
     Returns:
     - float: Value of the specified parameter.
     """
-    file_path = './model_settings.json' # Use .json if that's the actual format
-    try:
-        with open(file_path, "r") as file:
-            data = json.load(file) # Assumes JSON format based on original code
-        # Use .get() chaining to avoid KeyError
-        # Ensure args.model exists in the data dictionary
-        model_params = data.get(args.model, {})
-        return model_params.get("params", {}).get(parameter_name, None)
-    except FileNotFoundError:
-        logging.error(f"Model settings file not found at {file_path}")
-        return None
-    except json.JSONDecodeError:
-        logging.error(f"Error decoding JSON from {file_path}")
-        return None
-    except Exception as e:
-        logging.error(f"Error extracting parameter '{parameter_name}' for model '{args.model}': {e}")
-        return None
+    file_path = './model_settings.json'
+    with open(file_path, "r") as file:
+        data = json.load(file)
+
+    return data.get(args.model, {}).get("params", {}).get(parameter_name, None)
 
 def add_arange_ids(data_list):
     '''
@@ -184,8 +98,9 @@ def get_loaders(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, transfor
     return tr_loader, val_loader, te_loader
 
 @torch.no_grad()
-def evaluate_homo(loader, inds, model, data, device, args):
+def evaluate_homo(loader, inds, model, data, device, args): # [Source 95]
     '''Evaluates the model performane for homogenous graph data.'''
+    model.eval() # 设置模型为评估模式
     preds = []
     ground_truths = []
     for batch in tqdm.tqdm(loader, disable=not args.tqdm):
@@ -214,24 +129,32 @@ def evaluate_homo(loader, inds, model, data, device, args):
             mask = torch.cat((mask, torch.ones(add_y.shape[0], dtype=torch.bool)))
 
         #remove the unique edge id from the edge features, as it's no longer needed
-        batch.edge_attr = batch.edge_attr[:, 1:]
+        batch.edge_attr = batch.edge_attr[:, 1:] # [Source 98]
         
         with torch.no_grad():
             batch.to(device)
-            out = model(batch.x, batch.edge_index, batch.edge_attr)
+            out = model(batch.x, batch.edge_index, batch.edge_attr) # [Source 99]
             out = out[mask]
             pred = out.argmax(dim=-1)
             preds.append(pred)
-            ground_truths.append(batch.y[mask])
+            ground_truths.append(batch.y[mask]) # [Source 99]
+            
     pred = torch.cat(preds, dim=0).cpu().numpy()
     ground_truth = torch.cat(ground_truths, dim=0).cpu().numpy()
-    f1 = f1_score(ground_truth, pred)
+    # 计算 F1, Precision, Recall, Confusion Matrix
+    # 使用 zero_division=0 来处理分母为零的情况 (例如，没有预测为正样本，导致 precision 为 0/0)
+    f1 = f1_score(ground_truth, pred, zero_division=0) # [Source 99: Original f1 calculation]
+    precision = precision_score(ground_truth, pred, zero_division=0)
+    recall = recall_score(ground_truth, pred, zero_division=0)
+    conf_matrix = confusion_matrix(ground_truth, pred)
 
-    return f1
+    # 返回所有指标
+    return f1, precision, recall, conf_matrix # 修改返回值
 
 @torch.no_grad()
-def evaluate_hetero(loader, inds, model, data, device, args):
+def evaluate_hetero(loader, inds, model, data, device, args): # [Source 100]
     '''Evaluates the model performane for heterogenous graph data.'''
+    model.eval() # 设置模型为评估模式
     preds = []
     ground_truths = []
     for batch in tqdm.tqdm(loader, disable=not args.tqdm):
@@ -260,22 +183,29 @@ def evaluate_hetero(loader, inds, model, data, device, args):
             mask = torch.cat((mask, torch.ones(add_y.shape[0], dtype=torch.bool)))
 
         #remove the unique edge id from the edge features, as it's no longer needed
-        batch['node', 'to', 'node'].edge_attr = batch['node', 'to', 'node'].edge_attr[:, 1:]
-        batch['node', 'rev_to', 'node'].edge_attr = batch['node', 'rev_to', 'node'].edge_attr[:, 1:]
+        batch['node', 'to', 'node'].edge_attr = batch['node', 'to', 'node'].edge_attr[:, 1:] # [Source 103]
+        batch['node', 'rev_to', 'node'].edge_attr = batch['node', 'rev_to', 'node'].edge_attr[:, 1:] # [Source 103-104]
         
         with torch.no_grad():
             batch.to(device)
-            out = model(batch.x_dict, batch.edge_index_dict, batch.edge_attr_dict)
+            out = model(batch.x_dict, batch.edge_index_dict, batch.edge_attr_dict) # [Source 104]
             out = out[('node', 'to', 'node')]
             out = out[mask]
             pred = out.argmax(dim=-1)
-            preds.append(pred)
-            ground_truths.append(batch['node', 'to', 'node'].y[mask])
-    pred = torch.cat(preds, dim=0).cpu().numpy()
-    ground_truth = torch.cat(ground_truths, dim=0).cpu().numpy()
-    f1 = f1_score(ground_truth, pred)
+            preds.append(pred) # [Source 105]
+            ground_truths.append(batch['node', 'to', 'node'].y[mask]) # [Source 105]
 
-    return f1
+    pred = torch.cat(preds, dim=0).cpu().numpy()
+    ground_truth = torch.cat(ground_truths, dim=0).cpu().numpy() # [Source 105]
+
+    # 计算 F1, Precision, Recall, Confusion Matrix
+    f1 = f1_score(ground_truth, pred, zero_division=0) # [Source 105: Original f1 calculation]
+    precision = precision_score(ground_truth, pred, zero_division=0)
+    recall = recall_score(ground_truth, pred, zero_division=0)
+    conf_matrix = confusion_matrix(ground_truth, pred)
+
+    # 返回所有指标
+    return f1, precision, recall, conf_matrix # 修改返回值
 
 def save_model(model, optimizer, epoch, args, data_config):
     # Save the model in a dictionary

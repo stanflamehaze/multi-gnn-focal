@@ -1,0 +1,53 @@
+C:\Users\user\anaconda3\envs\env39\lib\site-packages\torch\cuda\__init__.py:235: UserWarning:
+NVIDIA GeForce RTX 5090 with CUDA capability sm_120 is not compatible with the current PyTorch installation.
+The current PyTorch install supports CUDA capabilities sm_50 sm_60 sm_61 sm_70 sm_75 sm_80 sm_86 sm_90.
+If you want to use the NVIDIA GeForce RTX 5090 GPU with PyTorch, please check the instructions at https://pytorch.org/get-started/locally/
+
+  warnings.warn(
+2025-04-09 20:18:47,491 [INFO ] Initialized new model and optimizer with lr=0.006213266113989207.
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\user\anaconda3\envs\env39\lib\logging\__init__.py", line 1086, in emit
+    stream.write(msg + self.terminator)
+  File "C:\Users\user\anaconda3\envs\env39\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 486-487: character maps to <undefined>
+Call stack:
+  File "C:\Users\user\multi-gnn-focal\main.py", line 41, in <module>
+    main()
+  File "C:\Users\user\multi-gnn-focal\main.py", line 34, in main
+    train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data_config)
+  File "C:\Users\user\multi-gnn-focal\training.py", line 391, in train_gnn
+    logging.info("Model Summary:\n" + str(summary(model, sample_x, sample_edge_index, sample_edge_attr)))
+Message: 'Model Summary:\n+---------------------------------+-------------------------------------------+----------------+----------+\n| Layer                           | Input Shape                               | Output Shape   | #Param   |\n|---------------------------------+-------------------------------------------+----------------+----------|\n| GINe                            | [193245, 1], [2, 1642488], [1642488, 4]   | [1642488, 2]   | 38,535   |\n| ├─(node_emb)Linear              | [193245, 1]                               | [193245, 66]   | 132      |\n| ├─(edge_emb)Linear              | [1642488, 4]                              | [1642488, 66]  | 330      |\n| ├─(convs)ModuleList             | --                                        | --             | 26,532   |\n| │    └─(0)GINEConv              | [193245, 66], [2, 1642488], [1642488, 66] | [193245, 66]   | 13,266   |\n| │    └─(1)GINEConv              | [193245, 66], [2, 1642488], [1642488, 66] | [193245, 66]   | 13,266   |\n| ├─(emlps)ModuleList             | --                                        | --             | --       |\n| ├─(batch_norms)ModuleList       | --                                        | --             | 264      |\n| │    └─(0)BatchNorm             | [193245, 66]                              | [193245, 66]   | 132      |\n| │    │    └─(module)BatchNorm1d | [193245, 66]                              | [193245, 66]   | 132      |\n| │    └─(1)BatchNorm             | [193245, 66]                              | [193245, 66]   | 132      |\n| │    │    └─(module)BatchNorm1d | [193245, 66]                              | [193245, 66]   | 132      |\n| ├─(mlp)Sequential               | [1642488, 198]                            | [1642488, 2]   | 11,277   |\n| │    └─(0)Linear                | [1642488, 198]                            | [1642488, 50]  | 9,950    |\n| │    └─(1)ReLU                  | [1642488, 50]                             | [1642488, 50]  | --       |\n| │    └─(2)Dropout               | [1642488, 50]                             | [1642488, 50]  | --       |\n| │    └─(3)Linear                | [1642488, 50]                             | [1642488, 25]  | 1,275    |\n| │    └─(4)ReLU                  | [1642488, 25]                             | [1642488, 25]  | --       |\n| │    └─(5)Dropout               | [1642488, 25]                             | [1642488, 25]  | --       |\n| │    └─(6)Linear                | [1642488, 25]                             | [1642488, 2]   | 52       |\n+---------------------------------+-------------------------------------------+----------------+----------+'
+Arguments: ()
+2025-04-09 20:18:47,901 [INFO ] Model Summary:
++---------------------------------+-------------------------------------------+----------------+----------+
+| Layer                           | Input Shape                               | Output Shape   | #Param   |
+|---------------------------------+-------------------------------------------+----------------+----------|
+| GINe                            | [193245, 1], [2, 1642488], [1642488, 4]   | [1642488, 2]   | 38,535   |
+| ├─(node_emb)Linear              | [193245, 1]                               | [193245, 66]   | 132      |
+| ├─(edge_emb)Linear              | [1642488, 4]                              | [1642488, 66]  | 330      |
+| ├─(convs)ModuleList             | --                                        | --             | 26,532   |
+| │    └─(0)GINEConv              | [193245, 66], [2, 1642488], [1642488, 66] | [193245, 66]   | 13,266   |
+| │    └─(1)GINEConv              | [193245, 66], [2, 1642488], [1642488, 66] | [193245, 66]   | 13,266   |
+| ├─(emlps)ModuleList             | --                                        | --             | --       |
+| ├─(batch_norms)ModuleList       | --                                        | --             | 264      |
+| │    └─(0)BatchNorm             | [193245, 66]                              | [193245, 66]   | 132      |
+| │    │    └─(module)BatchNorm1d | [193245, 66]                              | [193245, 66]   | 132      |
+| │    └─(1)BatchNorm             | [193245, 66]                              | [193245, 66]   | 132      |
+| │    │    └─(module)BatchNorm1d | [193245, 66]                              | [193245, 66]   | 132      |
+| ├─(mlp)Sequential               | [1642488, 198]                            | [1642488, 2]   | 11,277   |
+| │    └─(0)Linear                | [1642488, 198]                            | [1642488, 50]  | 9,950    |
+| │    └─(1)ReLU                  | [1642488, 50]                             | [1642488, 50]  | --       |
+| │    └─(2)Dropout               | [1642488, 50]                             | [1642488, 50]  | --       |
+| │    └─(3)Linear                | [1642488, 50]                             | [1642488, 25]  | 1,275    |
+| │    └─(4)ReLU                  | [1642488, 25]                             | [1642488, 25]  | --       |
+| │    └─(5)Dropout               | [1642488, 25]                             | [1642488, 25]  | --       |
+| │    └─(6)Linear                | [1642488, 25]                             | [1642488, 2]   | 52       |
++---------------------------------+-------------------------------------------+----------------+----------+
+2025-04-09 20:18:47,915 [INFO ] Instantiated Focal Loss (alpha=[0.75, 0.25], gamma=2.0)
+2025-04-09 20:18:47,916 [INFO ] Starting training with Homogeneous Data...
+2025-04-09 20:19:36,918 [INFO ] Train F1: 0.0016
+2025-04-09 20:20:23,429 [INFO ] Validation F1: 0.0000
+2025-04-09 20:20:23,430 [INFO ] Test F1: 0.0000
