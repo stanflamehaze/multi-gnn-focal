@@ -35,6 +35,25 @@ Thus, to run Multi-GIN with edge updates, you would run the following command:
 python main.py --data Small_HI --model gin --emlps --reverse_mp --ego --ports
 ```
 
+### Loss Function Options
+You can choose between Cross Entropy Loss and Focal Loss for training:
+
+<div align="center">
+
+| Argument    | Description                                          | Default Value |
+|-------------|------------------------------------------------------|---------------|
+| `--loss`    | Loss function type: 'ce' or 'focal'                  | 'ce'          |
+| `--alpha`   | Class weights for Focal Loss [pos_weight, neg_weight] | [0.75, 0.25]  |
+| `--gamma`   | Focusing parameter for Focal Loss                     | 2.0           |
+
+</div>
+
+For example, to use Focal Loss with custom parameters:
+
+```
+python main.py --data Small_HI --model gin --batch_size 73728 --loss focal --alpha 0.8 0.2 --gamma 2.0
+```
+
 ## Additional functionalities
 There are several arguments that can be set for additional functionality. Here's a list with them:
 
