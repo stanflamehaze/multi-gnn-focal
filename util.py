@@ -34,6 +34,9 @@ def create_parser():
     parser.add_argument("--batch_size", default=8192, type=int, help="Select the batch size for GNN training")
     parser.add_argument("--n_epochs", default=100, type=int, help="Select the number of epochs for GNN training")
     parser.add_argument('--num_neighs', nargs='+', default=[100,100], help='Pass the number of neighors to be sampled in each hop (descending).')
+    parser.add_argument("--loss", default="ce", type=str, choices=["ce", "focal"], help="Loss function to use: ce (CrossEntropy) or focal (FocalLoss)")
+    parser.add_argument("--alpha", nargs=2, type=float, default=[0.75, 0.25], help="Alpha parameter for Focal Loss - class weights [pos_weight, neg_weight]")
+    parser.add_argument("--gamma", type=float, default=2.0, help="Gamma parameter for Focal Loss - focusing parameter")
 
     #Misc
     parser.add_argument("--seed", default=1, type=int, help="Select the random seed for reproducability")

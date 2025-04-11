@@ -11,6 +11,27 @@ import wandb
 import logging
 import numpy as np # 确保导入 numpy
 
+# Define Focal Loss class
+class FocalLoss(torch.nn.Module):
+    def __init__(self, alpha=None, gamma=2.0, reduction='mean'):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.reduction = reduction
+        self.ce_loss = torch.nn.CrossEntropyLoss(weight=alpha, reduction='none')
+        
+    def forward(self, inputs, targets):
+        ce_loss = self.ce_loss(inputs, targets)
+        pt = torch.exp(-ce_loss)
+        focal_loss = (1 - pt) ** self.gamma * ce_loss
+        
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        else:
+            return focal_loss
+
 def train_homo(tr_loader, val_loader, te_loader, tr_inds, val_inds, te_inds, model, optimizer, loss_fn, args, config, device, val_data, te_data, data_config):
     """
     Trains and evaluates a homogenous GNN model.
@@ -337,28 +358,43 @@ def train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     logging.info(f"Using device: {device}")
 
-    #define a model config dictionary and wandb logging at the same time
+    # 检查是否有loss类型参数
+    loss_type = getattr(args, 'loss', 'ce')  # 默认为'ce'
+    
+    # 设置focal loss参数
+    alpha = getattr(args, 'alpha', [0.75, 0.25])  # 默认值
+    gamma = getattr(args, 'gamma', 2.0)  # 默认值
+    
+    # 日志记录focal loss参数
+    if loss_type == 'focal':
+        logging.info(f"Extracted loss type: {loss_type}")
+        logging.info(f"Focal loss params: alpha={alpha}, gamma={gamma}")
+    
+    # 定义模型配置字典和wandb日志
     wandb_mode = "disabled" if args.testing else "online"
-    project_name = "aml_gnn_project" # Replace with your desired project name
+    project_name = "aml_gnn_project"
     wandb.init(
-        mode=wandb_mode, # [Source 77]
-        project=project_name, # [Source 77] - Use a variable
-        config={ # [Source 77]
+        mode=wandb_mode,
+        project=project_name,
+        config={
             "epochs": args.n_epochs,
             "batch_size": args.batch_size,
             "model": args.model,
             "data": args.data,
-            "num_neighbors": args.num_neighs, # [Source 78]
-            "lr": extract_param("lr", args), # [Source 78]
-            "n_hidden": extract_param("n_hidden", args), # [Source 78]
-            "n_gnn_layers": extract_param("n_gnn_layers", args), # [Source 78]
-            "loss": "ce", # [Source 78]
-            "w_ce1": extract_param("w_ce1", args), # [Source 78]
-            "w_ce2": extract_param("w_ce2", args), # [Source 78]
-            "dropout": extract_param("dropout", args), # [Source 78-79]
-            "final_dropout": extract_param("final_dropout", args), # [Source 79]
-            "n_heads": extract_param("n_heads", args) if args.model == 'gat' else None, # [Source 79]
-            # Include adaptations in config for tracking
+            "num_neighbors": args.num_neighs,
+            "lr": extract_param("lr", args),
+            "n_hidden": extract_param("n_hidden", args),
+            "n_gnn_layers": extract_param("n_gnn_layers", args),
+            "loss": loss_type,  # 使用动态loss类型
+            "w_ce1": extract_param("w_ce1", args),
+            "w_ce2": extract_param("w_ce2", args),
+            "dropout": extract_param("dropout", args),
+            "final_dropout": extract_param("final_dropout", args),
+            "n_heads": extract_param("n_heads", args) if args.model == 'gat' else None,
+            # 添加focal loss参数
+            "alpha": alpha if loss_type == 'focal' else None,
+            "gamma": gamma if loss_type == 'focal' else None,
+            # 其他适配
             "emlps": args.emlps,
             "reverse_mp": args.reverse_mp,
             "ports": args.ports,
@@ -465,8 +501,16 @@ def train_gnn(tr_data, val_data, te_data, tr_inds, val_inds, te_inds, args, data
 
 
     # Define loss function
-    loss_fn = torch.nn.CrossEntropyLoss(weight=torch.FloatTensor([config.w_ce1, config.w_ce2]).to(device)) # [Source 82]
-    logging.info(f"Using CrossEntropyLoss with weights: {[config.w_ce1, config.w_ce2]}")
+    if hasattr(config, 'loss') and config.loss == 'focal':
+        # 使用Focal Loss
+        alpha = torch.FloatTensor([config.w_ce1, config.w_ce2]).to(device)
+        gamma = config.gamma if hasattr(config, 'gamma') else 2.0
+        loss_fn = FocalLoss(alpha=alpha, gamma=gamma)
+        logging.info(f"Instantiated Focal Loss (alpha={alpha.tolist()}, gamma={gamma})")
+    else:
+        # 使用默认的CrossEntropyLoss
+        loss_fn = torch.nn.CrossEntropyLoss(weight=torch.FloatTensor([config.w_ce1, config.w_ce2]).to(device))
+        logging.info(f"Using CrossEntropyLoss with weights: {[config.w_ce1, config.w_ce2]}")
 
     # Start training based on model type (homo/hetero)
     if args.reverse_mp:
